@@ -81,6 +81,7 @@ export class Symfinder{
             await this.visitPackage(files, usageVisitor, "usages", program, false);
             await this.visitPackage(files, new DecoratorFactoryTemplateVisitor(this.neoGraph), "decorators, factories, templates", program, true);
             await this.neoGraph.detectVPsAndVariants();
+            await this.proximityFolderDetection();
         } else {
             await this.neoGraph.markNodesAsBase();
         }
@@ -111,6 +112,10 @@ export class Symfinder{
         console.log("Number of constructors variants: " + await this.neoGraph.getNbConstructorVariants());
         console.log("Number of method level variants: " + await this.neoGraph.getNbMethodLevelVariants());
         console.log("Number of class level variants: " + await this.neoGraph.getNbClassLevelVariants());
+        console.log("Number of variant files: " + await this.neoGraph.getNbVariantFiles());
+        console.log("Number of variant folder: " + await this.neoGraph.getNbVariantFolders());
+        console.log("Number of vp folder: " + await this.neoGraph.getNbVPFolders());
+        console.log("Number of proximity entities: " + await this.neoGraph.getNbProximityEntity());
         console.log("Number of nodes: " + stats.nodes_count);
         console.log("Number of relationships: " + stats.relationships_count);
         console.log("Duration: "+this.msToTime(timeEnd-timeStart));
@@ -216,6 +221,51 @@ export class Symfinder{
             }
         }
         return files;
+    }
+
+    /**
+     * Detect folder with the proximity analyse describe in scientific TER article
+     * This method annoted folder and files with :
+     * VP_FOLDER
+     * VARIANT_FOLDER
+     * VARIANT_FILE
+     * SUPER_VARIANT_FILE
+     */
+    async proximityFolderDetection(): Promise<void>{
+
+        await this.neoGraph.setProximityFolder();
+        var vpFoldersPath: string[] = await this.neoGraph.getAllVPFoldersPath();
+
+        let i = 0;
+        let len = vpFoldersPath.length;
+        for(let vpFolderPath of vpFoldersPath){
+            i++;
+            process.stdout.write("\rSearch SUPER variant files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+")");
+            var variantFilesNameSet: string[] = await this.neoGraph.getVariantFilesNameForVPFolderPath(vpFolderPath);
+            var foldersPath: string[] = await this.neoGraph.getFoldersPathForVPFolderPath(vpFolderPath);
+
+            var isSuperVariantFile = true;
+            for(let variantFileName of variantFilesNameSet){
+
+                var superVariantFilesNode: Node[] = [];
+                for(let folderPath of foldersPath){
+
+                    let currentFile: Node | undefined = await this.neoGraph.getVariantFileForFolderPath(folderPath, variantFileName);
+                    if(currentFile === undefined){
+                        isSuperVariantFile = false;
+                        break;
+                    }
+                    else superVariantFilesNode.push(currentFile)
+                }
+                if(isSuperVariantFile){
+                    for(let superVariantFileNode of superVariantFilesNode){
+                        await this.neoGraph.addLabelToNode(superVariantFileNode, EntityAttribut.CORE_FILE)
+                    }
+                }
+            }
+        }
+        if(i > 0)
+            process.stdout.write("\rSearch SUPER variant files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+"), done.\n");
     }
 
     private createProjectJson(src: string, content: string): ExperimentResult {
