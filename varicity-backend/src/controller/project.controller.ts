@@ -37,6 +37,8 @@ export class ProjectController {
   newProject(@Body() experimentResult: ExperimentResult) {
     if (experimentResult.externalMetric !== undefined && experimentResult.externalMetric !== null) {
       experimentResult.externalMetric = new Map(Object.entries(experimentResult.externalMetric),);
+    } else {
+      experimentResult.externalMetric = new Map()
     }
     this.projectService.addProject(experimentResult);
   }

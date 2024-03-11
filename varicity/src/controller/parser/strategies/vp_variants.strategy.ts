@@ -14,37 +14,129 @@ import { Color3 } from "@babylonjs/core";
  * Strategy used to parse both Symfinder Java and Symfinder JS results
  */
 export class VPVariantsStrategy implements ParsingStrategy {
+    private static readonly FILE_TYPES = ["FILE", "DIRECTORY"];
+    private static readonly FILE_CLASS_LINK_TYPES = ["EXPORT", "IMPORT"];
+    private static readonly FILE_LINK_TYPES = ["CHILD", "CORE_CONTENT", "CODE_CLONE"]
 
-    public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
+    // public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
+    //     console.log('Analyzing with VP and variants strategy: ', data);
+    //     console.log('Config used: ', config);
+    //     if (data) {
+    //         let nodesList: NodeElement[] = [];
+    //         const apiList: NodeElement[] = [];
+
+    //         data.nodes.forEach(n => {
+    //             let node = this.nodeInterface2nodeElement(n);
+    //             this.checkAndAddApiClass(node, config, apiList);
+    //             nodesList.push(node);
+    //         });
+
+    //         const linkElements = data.links
+    //             .map(l => new LinkElement(l.source, l.target, l.type));
+    //         const allLinks = data.alllinks
+    //             .map(l => new LinkElement(l.source, l.target, l.type));
+    //         const hierarchyLinks = allLinks.filter(l => config.hierarchy_links.includes(l.type));
+
+
+    //         nodesList.forEach(n => {
+    //             n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n , nodesList, linkElements).length);
+    //         });
+
+    //         this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation);
+
+    //         const d = this.buildDistricts(nodesList, hierarchyLinks, config.orientation);
+
+    //         let result = new EntitiesList();
+    //         result.district = d;
+
+    //         if (config.api_classes !== undefined) {
+    //             data.allnodes.filter(
+    //                 nod => config.api_classes.includes(nod.name)
+    //                     && !nodesList.map(no => no.name).includes(nod.name)
+    //             ).forEach(n => {
+    //                 let node = this.nodeInterface2nodeElement(n, false);
+    //                 node.types.push("API");
+    //                 let c = new ClassImplem(node, node.compositionLevel);
+    //                 result.district.addBuilding(c);
+    //             });
+    //         }
+    //         this.addAllLink(allLinks, result);
+
+    //         // log for non-vp non-variant nodes
+    //         console.log(data.allnodes.filter(nod => !nodesList.map(no => no.name).includes(nod.name)).map(n => n.name));
+
+    //         // log the results
+    //         console.log("Result of parsing: ", result);
+    //         return result;
+    //     }
+    //     throw new Error('Data is undefined');
+    // }
+
+        public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
         console.log('Analyzing with VP and variants strategy: ', data);
         console.log('Config used: ', config);
         if (data) {
             let nodesList: NodeElement[] = [];
+            let fileList: NodeElement[] = [];
             const apiList: NodeElement[] = [];
 
             data.nodes.forEach(n => {
                 let node = this.nodeInterface2nodeElement(n);
+
                 this.checkAndAddApiClass(node, config, apiList);
-                nodesList.push(node);
+
+                if (node.types.find((t => VPVariantsStrategy.FILE_TYPES.find(f => t === f)))) /// This is a file or a folder
+                    fileList.push(node);
+                else
+                    nodesList.push(node);
             });
 
             const linkElements = data.links
+                .filter(l => !VPVariantsStrategy.FILE_LINK_TYPES.includes(l.type)) /// Remove all that is bind to a file or a folder
                 .map(l => new LinkElement(l.source, l.target, l.type));
             const allLinks = data.alllinks
+                .filter(l => !VPVariantsStrategy.FILE_LINK_TYPES.includes(l.type)) /// Remove all that is bind to a file or a folder
                 .map(l => new LinkElement(l.source, l.target, l.type));
             const hierarchyLinks = allLinks.filter(l => config.hierarchy_links.includes(l.type));
-
+            const fileLinks = data.links
+                .filter(l => VPVariantsStrategy.FILE_LINK_TYPES.includes(l.type)) /// Remove all that is not bind to a file or a folder
+                .map(l => new LinkElement(l.source, l.target, l.type, l.percentage));
+            const fileClassLinks = data.alllinks.filter(l => VPVariantsStrategy.FILE_CLASS_LINK_TYPES.includes(l.type));
+            const fileHierarchyLinks = fileLinks.filter(l => config.hierarchy_links.includes(l.type))
 
             nodesList.forEach(n => {
-                n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n , nodesList, linkElements).length);
+                n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n, nodesList, linkElements).length);
+            });
+            fileList.forEach(n => {
+                n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n, fileList, fileLinks).length);
+            })
+            fileList.forEach(file => {
+                file.exportedClasses = fileClassLinks
+                    .filter(link => link.source === file.name)
+                    .map(link => this.findNodeByName(link.target, nodesList))
             });
 
-            this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation);
+            // Give a color to all duplicate set of file
+            const duplicates = this.findDuplicatedFiles(
+                fileList.filter(l => l.types.includes("FILE")),
+                fileLinks.filter(l => l.type === "CORE_CONTENT")
+            )
+            const colors: Color3[] = this.pickColorsForNElements(duplicates.filter(array => array.length > 1).length);
+            duplicates.filter(array => array.length > 1).forEach(array => {
+                let color = colors.pop();
+                array.forEach(file => file.forceColor = color);
+            });
 
-            const d = this.buildDistricts(nodesList, hierarchyLinks, config.orientation);
+
+            this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation); // Add composition level to classes
+            this.buildComposition(fileHierarchyLinks, fileList, apiList, 0, config.orientation); // Add composition level to files ?
+
+            const d = this.buildDistricts(nodesList, hierarchyLinks, config.orientation); // Create a district for classes
+            const fileDistrict = this.buildDistricts(fileList, fileHierarchyLinks, config.orientation); // Create a district for file
 
             let result = new EntitiesList();
             result.district = d;
+            result.file_district = fileDistrict;
 
             if (config.api_classes !== undefined) {
                 data.allnodes.filter(
@@ -52,18 +144,27 @@ export class VPVariantsStrategy implements ParsingStrategy {
                         && !nodesList.map(no => no.name).includes(nod.name)
                 ).forEach(n => {
                     let node = this.nodeInterface2nodeElement(n, false);
+
                     node.types.push("API");
-                    let c = new ClassImplem(node, node.compositionLevel);
+
+                    let c = new ClassImplem(
+                        node,
+                        node.compositionLevel
+                    );
+
                     result.district.addBuilding(c);
                 });
             }
+
             this.addAllLink(allLinks, result);
+            this.addAllLink(fileLinks, result);
 
             // log for non-vp non-variant nodes
             console.log(data.allnodes.filter(nod => !nodesList.map(no => no.name).includes(nod.name)).map(n => n.name));
 
             // log the results
             console.log("Result of parsing: ", result);
+
             return result;
         }
         throw new Error('Data is undefined');
@@ -234,6 +335,8 @@ export class VPVariantsStrategy implements ParsingStrategy {
                 nodeElement.forceColor
             ));
 
+            result.vp.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement,0));
+
             children.forEach(c => {
                 const r = this.buildDistrict(c, nodes, links, level + 1, orientation);
                 if (r instanceof VPVariantsImplem) {
@@ -249,6 +352,8 @@ export class VPVariantsStrategy implements ParsingStrategy {
                 nodeElement.compositionLevel,
                 nodeElement.forceColor
             );
+            
+            result.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement,0));
 
             return result;
         }
@@ -291,6 +396,38 @@ export class VPVariantsStrategy implements ParsingStrategy {
             }
         }
         return undefined;
+    }
+
+    private findDuplicatedFiles(files: NodeElement[], links: LinkElement[]): NodeElement[][] {
+        const excluded = []
+        const res: NodeElement[][] = []
+
+        for (const file of files) {
+            if (excluded.includes(file))
+                continue;
+            res.push(this.findDuplicatesForFile(file, files, links, excluded));
+        }
+
+        return res;
+    }
+
+    private findDuplicatesForFile(
+        file: NodeElement,
+        files: NodeElement[],
+        links: LinkElement[],
+        excluded: NodeElement[]
+    ): NodeElement[] {
+        if (excluded.includes(file))
+            return []
+        excluded.push(file)
+
+        const res = [file]
+        const duplicates = this.getLinkedNodesFromSource(file, files, links);
+        for (const duplicate of duplicates) {
+            res.push(...this.findDuplicatesForFile(duplicate, files, links, excluded));
+        }
+
+        return res
     }
 
     private areColorClose(color1: Color3, color2: Color3, epsilon: number = 0.01) {

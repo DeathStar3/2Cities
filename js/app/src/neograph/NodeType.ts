@@ -64,7 +64,7 @@ export enum RelationType {
     IMPORT = "IMPORT",
     LOAD = "LOAD",
     CHILD = "CHILD",
-    CODE_DUPLICATED = "CODE_DUPLICATED",
+    CODE_CLONE = "CODE_CLONE",
     CORE_CONTENT = "CORE_CONTENT",
     TYPE_OF = "TYPE_OF"
 }

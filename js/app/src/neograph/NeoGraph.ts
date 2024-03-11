@@ -601,12 +601,12 @@ export default class NeoGraph{
 
     async exportRelationJSON(src:string):Promise<string> {
         const requestLinks = "match (n)-[r]->(m) where (type(r) = 'EXPORT' or type(r) = 'IMPLEMENTS' or type(r) = 'EXTENDS'" +
-            " or type(r) = 'IMPORT' or type(r) = 'LOAD' or type(r) = 'CHILD'  or type(r) = 'CORE_CONTENT' or type(r) = 'CODE_DUPLICATED')" +
+            " or type(r) = 'IMPORT' or type(r) = 'LOAD' or type(r) = 'CHILD'  or type(r) = 'CORE_CONTENT' or type(r) = 'CODE_CLONE')" +
             " and not ('OUT_OF_SCOPE' in labels(m)) and not ('OUT_OF_SCOPE' in labels(n)) and not ('VARIABLE' in labels (m)) and not ('FUNCTION' in labels(m))" +
             "with CASE when m.path IS NULL then m.name else m.path end as mname, CASE " +
             "when n.path IS NULL then n.name else n.path end as nname,r with collect " +
             "({source:nname,target:mname,type:type(r)}) as rela return {links:rela}";
-        const duplicationLinksRequest = "match (n)-[r]->(m) where type(r) = 'CODE_DUPLICATED'  or type(r) = 'CORE_CONTENT' and not ('OUT_OF_SCOPE' in labels(m)) and not ('OUT_OF_SCOPE' in labels(n)) " +
+        const duplicationLinksRequest = "match (n)-[r]->(m) where type(r) = 'CODE_CLONE'  or type(r) = 'CORE_CONTENT' and not ('OUT_OF_SCOPE' in labels(m)) and not ('OUT_OF_SCOPE' in labels(n)) " +
             "with CASE when m.path IS NULL then m.name else m.path end as mname, CASE when n.path IS NULL then n.name else n.path end as nname,r " +
             " with collect ({source:nname,target:mname,percentage: r.codePercent, type:type(r)}) as rela return {links:rela} ";
         const classRequest = "MATCH (n) where ('CLASS' in labels(n) or 'INTERFACE' in labels(n)) and not ('BASE' in labels(n)) " +
@@ -623,7 +623,7 @@ export default class NeoGraph{
             "WITH collect ( distinct {source:f.path,target:fe.path,type:'USAGE'}) as rela " +
             "RETURN {linkscompose:rela} ";
         const allLinks = "match (n)-[r]->(m) where (type(r) = 'EXPORT' or type(r) = 'IMPLEMENTS' or type(r) = 'EXTENDS'" +
-            " or type(r) = 'IMPORT' or type(r) = 'LOAD' or type(r) = 'CHILD'  or type(r) = 'CORE_CONTENT' or type(r) = 'CODE_DUPLICATED')" +
+            " or type(r) = 'IMPORT' or type(r) = 'LOAD' or type(r) = 'CHILD'  or type(r) = 'CORE_CONTENT' or type(r) = 'CODE_CLONE')" +
             " and not ('OUT_OF_SCOPE' in labels(m)  or 'FUNCTION' in labels(m) or 'VARIABLE' in labels(m) or 'PROPERTY' in labels(m)) and not ('OUT_OF_SCOPE' in labels(n) or 'FUNCTION' in labels(n) " +
             "or 'VARIABLE' in labels(n) or 'PROPERTY' in labels(n)) with CASE when m.path IS NULL then m.name else m.path end as mname, CASE " +
             "when n.path IS NULL then n.name else n.path end as nname,r with collect " +

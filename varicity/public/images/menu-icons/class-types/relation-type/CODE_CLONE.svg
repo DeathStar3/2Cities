@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="clip-CODE_CLONE">
+      <rect width="64" height="64"/>
+    </clipPath>
+  </defs>
+  <g id="CODE_CLONE" clip-path="url(#clip-CODE_CLONE)">
+    <g id="Groupe_145" data-name="Groupe 145" transform="translate(-12306 3792)">
+      <circle id="Ellipse_2" data-name="Ellipse 2" cx="32" cy="32" r="32" transform="translate(12306 -3792)" fill="#4dbb5f"/>
+      <text id="CD" transform="translate(12338 -3749)" fill="#fff" font-size="25" font-family="SegoeUI-Bold, Segoe UI" font-weight="700"><tspan x="-16" y="0">CD</tspan></text>
+    </g>
+  </g>
+</svg>

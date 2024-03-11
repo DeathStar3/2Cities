@@ -1,7 +1,6 @@
 from neo4j import GraphDatabase
-from neo4j.graph import Node
-from typing import List
-import json
+from neo4j import Record
+from typing import Dict, List
 
 from db_types import RelationTypes
 
@@ -10,12 +9,13 @@ class Neo4jConnection:
 
     def __init__(self, uri, auth):
         self.driver = GraphDatabase.driver(uri, auth=auth)
+        self.db_dict = {"links": [], "nodes": [], "alllinks": [], "allnodes": [], "linkscompose": []}
 
     def close(self):
         self.driver.close()
     
     @staticmethod
-    def _get_node_with_path(tx, path: str):
+    def _get_node_with_path(tx, path: str) -> List:
         request = """
                 MATCH (n:FILE)
                 WHERE n.path = $path
@@ -25,13 +25,105 @@ class Neo4jConnection:
         return list(result)
     
     @staticmethod
-    def _link_code_clones(tx, src_path: str, clone_path: str) -> None:
+    def _link_code_clones(tx, src_path: str, clone_path: str) -> List:
         request = """
                 MATCH (src:FILE {path: $src_path})
                 MATCH (clone:FILE {path: $clone_path})
                 MERGE (src)-[:CODE_CLONE]->(clone)
                """
         result = tx.run(request, src_path=src_path, clone_path=clone_path)
+        return list(result)
+    
+    @staticmethod
+    def _export_links(tx) -> List:
+        request = """
+            MATCH (n)-[r]->(m) 
+            WHERE (type(r) = 'EXPORT' OR 
+                   type(r) = 'IMPLEMENTS' OR 
+                   type(r) = 'EXTENDS' OR 
+                   type(r) = 'IMPORT' OR 
+                   type(r) = 'LOAD' OR 
+                   type(r) = 'CHILD'  OR 
+                   type(r) = 'CORE_CONTENT' OR 
+                   type(r) = 'CODE_CLONE')
+            AND NOT ('OUT_OF_SCOPE' IN labels(m)) 
+            AND NOT ('OUT_OF_SCOPE' IN labels(n)) 
+            AND NOT ('VARIABLE' IN labels (m)) 
+            AND NOT ('FUNCTION' IN labels(m))
+            WITH CASE WHEN m.path IS NULL THEN m.name ELSE m.path END AS mname, CASE WHEN n.path IS NULL THEN n.name ELSE n.path END AS nname,r 
+            WITH collect({source:nname,target:mname,type:type(r)}) AS rela 
+            RETURN {links:rela}
+            """
+        result = tx.run(request)
+        return list(result)
+        
+    @staticmethod
+    def _export_dup_links(tx) -> List:
+        request = """
+            MATCH (n)-[r]->(m) 
+            WHERE type(r) = 'CODE_CLONE'  OR 
+                  type(r) = 'CORE_CONTENT' 
+            AND NOT ('OUT_OF_SCOPE' IN labels(m)) 
+            AND NOT ('OUT_OF_SCOPE' IN labels(n))
+            WITH CASE WHEN m.path IS NULL THEN m.name ELSE m.path END AS mname, CASE WHEN n.path IS NULL THEN n.name ELSE n.path END AS nname,r
+            WITH collect ({source:nname,target:mname,percentage: r.codePercent, type:type(r)}) AS rela 
+            RETURN {links:rela}
+            """
+        result = tx.run(request)
+        return list(result)
+
+    @staticmethod  
+    def _export_all_links(tx) -> List:
+        request = """
+            MATCH (n)-[r]->(m) 
+            WHERE (type(r) = 'EXPORT' OR 
+                   type(r) = 'IMPLEMENTS' OR 
+                   type(r) = 'EXTENDS' OR 
+                   type(r) = 'IMPORT' OR 
+                   type(r) = 'LOAD' OR 
+                   type(r) = 'CHILD'  OR 
+                   type(r) = 'CORE_CONTENT' OR 
+                   type(r) = 'CODE_CLONE')
+            AND NOT ('OUT_OF_SCOPE' IN labels(m)  OR 'FUNCTION' IN labels(m) OR 'VARIABLE' IN labels(m) OR 'PROPERTY' IN labels(m)) 
+            AND NOT ('OUT_OF_SCOPE' IN labels(n) OR 'FUNCTION' IN labels(n) OR 'VARIABLE' IN labels(n) OR 'PROPERTY' IN labels(n)) 
+            WITH CASE WHEN m.path IS NULL THEN m.name ELSE m.path END AS mname, CASE WHEN n.path IS NULL THEN n.name ELSE n.path END AS nname,r
+            WITH collect ({source:nname,target:mname,type:type(r)}) AS rela
+            RETURN {links:rela}
+            """
+        result = tx.run(request)
+        return list(result)
+    
+    @staticmethod
+    def _export_class(tx) -> List:
+        request = """
+            MATCH (n) 
+            WHERE ('CLASS' IN labels(n) OR 'INTERFACE' IN labels(n)) and not ('BASE' IN labels(n))
+            WITH collect({types:labels(n), name:n.name, constructorVPs:n.constructorVPs, publicConstructors:n.publicConstructors, methodVariants:n.methodVariants, classVariants:n.classVariants, publicMethods:n.publicMethods, methodVPs:n.methodVPs}) AS m 
+            RETURN {nodes:m}
+            """
+        result = tx.run(request)
+        return list(result)
+        
+    @staticmethod
+    def _export_files(tx) -> List:
+        request = """
+            MATCH (n) 
+            WHERE (n:VP_FOLDER OR n:VARIANT_FOLDER OR n:DIRECTORY OR n:VARIANT_FILE OR n:CORE_FILE OR n:FILE) AND NOT ('BASE' IN labels(n))
+            WITH collect({types:labels(n), name:n.path, constructorVPs:n.constructorVPs, publicConstructors:n.publicConstructors, methodVariants:n.methodVariants, classVariants:n.classVariants, publicMethods:n.publicMethods, methodVPs:n.methodVPs}) as m 
+            RETURN {nodes:m}
+            """
+        result = tx.run(request)
+        return list(result)
+
+    @staticmethod
+    def _export_compose_links(tx) -> List:
+        request = """
+            MATCH (f:FILE)-[r]->(n)-[:TYPE_OF]->(m:CLASS)<-[:EXPORT]-(fe:FILE)
+            WHERE ('PROPERTY' IN labels(n) OR 'PARAMETER' IN labels(n) OR 'VARIABLE' IN labels(n))
+            WITH collect(distinct{source:f.path, target:fe.path, type:'USAGE'}) AS rela
+            RETURN {linkscompose:rela}
+            """
+        result = tx.run(request)
         return list(result)
     
     def get_node(self, file_path: str) -> List:
@@ -48,3 +140,41 @@ class Neo4jConnection:
                 src_path,
                 clone_path
             )
+
+    def export_db(self) -> None:
+        with self.driver.session(database="neo4j") as session:
+            links = session.execute_read(
+                self._export_links
+            )
+            link_list = links[0][0]["links"]
+            self.db_dict["links"].append(link_list)
+
+            dups_links = session.execute_read(
+                self._export_dup_links
+            )
+            dups_list = dups_links[0][0]["links"]
+            self.db_dict["links"].append(dups_list)
+
+            all_links = session.execute_read(
+                self._export_all_links
+            )
+            all_list = all_links[0][0]["links"]
+            self.db_dict["alllinks"].append(all_list)
+
+            compose_links = session.execute_read(
+                self._export_compose_links
+            )
+            compose_list = compose_links[0][0]["linkscompose"]
+            self.db_dict["linkscompose"].append(compose_list)
+
+            classes = session.execute_read(
+                self._export_class
+            )
+            classes_list = classes[0][0]["nodes"]
+            self.db_dict["nodes"].append(classes_list)
+
+            files = session.execute_read(
+                self._export_files
+            )
+            files_list = files[0][0]["nodes"]
+            self.db_dict["nodes"].append(files_list)

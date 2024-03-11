@@ -88,13 +88,13 @@ export class Symfinder{
 
         const timeEnd = Date.now();
 
-        await this.neoGraph.exportToJSON();
-        let content = await this.neoGraph.exportRelationJSON(src);
-        if(http_path !== "") {
-            await this.sendToServer(src, http_path, content);
-            console.log("Sent to server " + http_path)
-        }
-        console.log("db fetched");
+        // await this.neoGraph.exportToJSON();
+        // let content = await this.neoGraph.exportRelationJSON(src);
+        // if(http_path !== "") {
+        //     await this.sendToServer(src, http_path, content);
+        //     console.log("Sent to server " + http_path)
+        // }
+        // console.log("db fetched");
 
         let stats = new FileStats();
         stats.files_count = files.length;
@@ -283,6 +283,7 @@ export class Symfinder{
     private async sendToServer(src: string, http_path: string, content: string) {
         console.log("CREATE PROJECT JSON : ");
         const result = this.createProjectJson(src, content);
+        console.log(result)
         console.log("\n################Sending request ...\n")
         await axios.post(http_path, result).catch((reason: any) => console.log(reason))
                                                     .then(() => console.log("Data has been correctly sent"))

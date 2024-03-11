@@ -22,12 +22,12 @@
 # This script builds the images to be used with docker
 
 set -e
-TAG=scp2024
+TAG=local
 
 cd varicity
 echo "Building VariCity-TS front"
-docker build -t deathstar3/varicity-ts:${TAG} .
+docker build --no-cache -t deathstar3/varicity-ts:${TAG} .
 
 cd ../varicity-backend
 echo "Building VariCity-TS backend"
-docker build -t deathstar3/varicity-ts-backend:${TAG} .
+docker build --no-cache -t deathstar3/varicity-ts-backend:${TAG} .
