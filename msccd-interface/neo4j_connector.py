@@ -147,34 +147,41 @@ class Neo4jConnection:
                 self._export_links
             )
             link_list = links[0][0]["links"]
-            self.db_dict["links"].append(link_list)
+            for elt in link_list:
+                self.db_dict["links"].append(elt)
 
             dups_links = session.execute_read(
                 self._export_dup_links
             )
             dups_list = dups_links[0][0]["links"]
-            self.db_dict["links"].append(dups_list)
+            for elt in dups_list:
+                self.db_dict["links"].append(elt)
+
 
             all_links = session.execute_read(
                 self._export_all_links
             )
             all_list = all_links[0][0]["links"]
-            self.db_dict["alllinks"].append(all_list)
+            for elt in all_list:
+                self.db_dict["alllinks"].append(elt)
 
             compose_links = session.execute_read(
                 self._export_compose_links
             )
             compose_list = compose_links[0][0]["linkscompose"]
-            self.db_dict["linkscompose"].append(compose_list)
+            for elt in compose_list:
+                self.db_dict["linkscompose"].append(elt)
 
             classes = session.execute_read(
                 self._export_class
             )
             classes_list = classes[0][0]["nodes"]
-            self.db_dict["nodes"].append(classes_list)
+            for elt in classes_list:
+                self.db_dict["nodes"].append(elt)
 
             files = session.execute_read(
                 self._export_files
             )
             files_list = files[0][0]["nodes"]
-            self.db_dict["nodes"].append(files_list)
+            for elt in files_list:
+                self.db_dict["nodes"].append(elt)

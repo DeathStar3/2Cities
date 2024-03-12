@@ -1,5 +1,6 @@
 import json, os, sys
 from typing import List, Dict
+import re
 
 
 MSCCD_ROOT = "./"
@@ -17,6 +18,12 @@ def extract_file_list(filepath: str):
         file_list.append(split[1])
     return file_list
 
+def format_path(path: str) -> str:
+    exp_pattern = r".*/echarts"
+    exp_replacement = "experiments/echarts"
+
+    return  re.sub(exp_pattern, exp_replacement, path)
+
 def export_clone_data(clone_pairs_file: str, file_list: List) -> Dict:
     clone_pairs = []
     for line in open(clone_pairs_file, "r").readlines():
@@ -30,17 +37,20 @@ def export_clone_data(clone_pairs_file: str, file_list: List) -> Dict:
             src_path = file_list[src_index].strip("\n")
             clone_path = file_list[clone_index].strip("\n")
             
-            if src_path not in res.keys():
-                src_name = get_file_name(src_path)
-                clone_name = get_file_name(clone_path)
+            src_path_f = format_path(src_path)
+            clone_path_f = format_path(clone_path)
+            
+            if src_path_f not in res.keys():
+                src_name = get_file_name(src_path_f)
+                clone_name = get_file_name(clone_path_f)
                 if "test" in src_name or "test" in clone_name:
                     continue
-                res[src_path] = {"name": src_name, "clones": [(clone_name, clone_path)]}
+                res[src_path_f] = {"name": src_name, "clones": [(clone_name, clone_path_f)]}
             else:
-                clone_name = get_file_name(clone_path)
+                clone_name = get_file_name(clone_path_f)
                 if "test" in clone_name:
                     continue
-                res[src_path]["clones"].append((clone_name, clone_path))
+                res[src_path_f]["clones"].append((clone_name, clone_path_f))
         else:
             continue
     return res
