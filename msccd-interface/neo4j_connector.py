@@ -35,6 +35,16 @@ class Neo4jConnection:
         return list(result)
     
     @staticmethod
+    def _link_core_files(tx, src_path: str, clone_path: str) -> List:
+        request = """
+                MATCH (src:FILE {path: $src_path})
+                MATCH (clone:FILE {path: $clone_path})
+                MERGE (src)-[:CORE_CONTENT]->(clone)
+            """
+        result = tx.run(request, src_path=src_path, clone_path=clone_path)
+        return list(result)
+    
+    @staticmethod
     def _export_links(tx) -> List:
         request = """
             MATCH (n)-[r]->(m) 
@@ -133,10 +143,18 @@ class Neo4jConnection:
                 file_path
             )
         
-    def link_clones(self, src_path: str, clone_path: str) -> List:
+    def link_clones(self, src_path: str, clone_path: str) -> None:
         with self.driver.session(database="neo4j") as session:
             linked_nodes = session.execute_write(
                 self._link_code_clones,
+                src_path,
+                clone_path
+            )
+
+    def link_core(self, src_path: str, clone_path: str) -> None:
+        with self.driver.session(database="neo4j") as sesssion:
+            core_link = sesssion.execute_write(
+                self._link_core_files,
                 src_path,
                 clone_path
             )

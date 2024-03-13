@@ -240,13 +240,12 @@ export class Symfinder{
         let len = vpFoldersPath.length;
         for(let vpFolderPath of vpFoldersPath){
             i++;
-            process.stdout.write("\rSearch SUPER variant files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+")");
+            process.stdout.write("\rSearch core files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+")");
             var variantFilesNameSet: string[] = await this.neoGraph.getVariantFilesNameForVPFolderPath(vpFolderPath);
             var foldersPath: string[] = await this.neoGraph.getFoldersPathForVPFolderPath(vpFolderPath);
 
             var isSuperVariantFile = true;
             for(let variantFileName of variantFilesNameSet){
-
                 var superVariantFilesNode: Node[] = [];
                 for(let folderPath of foldersPath){
 
@@ -265,7 +264,7 @@ export class Symfinder{
             }
         }
         if(i > 0)
-            process.stdout.write("\rSearch SUPER variant files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+"), done.\n");
+            process.stdout.write("\rSearch core files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+"), done.\n");
     }
 
     private createProjectJson(src: string, content: string): ExperimentResult {

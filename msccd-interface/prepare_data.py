@@ -18,13 +18,13 @@ def extract_file_list(filepath: str):
         file_list.append(split[1])
     return file_list
 
-def format_path(path: str) -> str:
-    exp_pattern = r".*/echarts"
-    exp_replacement = "experiments/echarts"
+def format_path(path: str, project_name) -> str:
+    exp_pattern = rf".*/{project_name}/"
+    exp_replacement = f"experiments/{project_name}/"
 
     return  re.sub(exp_pattern, exp_replacement, path)
 
-def export_clone_data(clone_pairs_file: str, file_list: List) -> Dict:
+def export_clone_data(clone_pairs_file: str, file_list: List, project_name: str) -> Dict:
     clone_pairs = []
     for line in open(clone_pairs_file, "r").readlines():
         clone_pairs.append(json.loads(line[:-1]))
@@ -37,8 +37,8 @@ def export_clone_data(clone_pairs_file: str, file_list: List) -> Dict:
             src_path = file_list[src_index].strip("\n")
             clone_path = file_list[clone_index].strip("\n")
             
-            src_path_f = format_path(src_path)
-            clone_path_f = format_path(clone_path)
+            src_path_f = format_path(src_path, project_name)
+            clone_path_f = format_path(clone_path, project_name)
             
             if src_path_f not in res.keys():
                 src_name = get_file_name(src_path_f)
