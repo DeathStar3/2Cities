@@ -9,6 +9,8 @@ export class EntitiesList {
 
     links: Link[] = [];
 
+    file_district: District; // For files
+
     /**
      * @deprecated
      */
@@ -28,6 +30,9 @@ export class EntitiesList {
         if (res !== undefined) {
             return res;
         }
+        res = this.file_district.getBuildingFromName(name);
+        if (res !== undefined)
+            return res;
         return undefined;
     }
 

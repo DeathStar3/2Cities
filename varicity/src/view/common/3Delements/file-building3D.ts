@@ -187,9 +187,9 @@ export class FileBuilding3D extends Building3D {
 			//
 			this.updateTextureCoreContent();
 		}
-		else if (this.links.some(l => l.type == "CODE_DUPLICATED")){
+		else if (this.links.some(l => l.type == "CODE_CLONE")){
 			//
-			this.updateTextureCodeDuplicated(this.links.find(l => l.type === "CODE_DUPLICATED"));
+			this.updateTextureCodeDuplicated(this.links.find(l => l.type === "CODE_CLONE"));
 
 		}
 	}

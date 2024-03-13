@@ -81,19 +81,20 @@ export class Symfinder{
             await this.visitPackage(files, usageVisitor, "usages", program, false);
             await this.visitPackage(files, new DecoratorFactoryTemplateVisitor(this.neoGraph), "decorators, factories, templates", program, true);
             await this.neoGraph.detectVPsAndVariants();
+            await this.proximityFolderDetection();
         } else {
             await this.neoGraph.markNodesAsBase();
         }
 
         const timeEnd = Date.now();
 
-        await this.neoGraph.exportToJSON();
-        let content = await this.neoGraph.exportRelationJSON(src);
-        if(http_path !== "") {
-            await this.sendToServer(src, http_path, content);
-            console.log("Sent to server " + http_path)
-        }
-        console.log("db fetched");
+        // await this.neoGraph.exportToJSON();
+        // let content = await this.neoGraph.exportRelationJSON(src);
+        // if(http_path !== "") {
+        //     await this.sendToServer(src, http_path, content);
+        //     console.log("Sent to server " + http_path)
+        // }
+        // console.log("db fetched");
 
         let stats = new FileStats();
         stats.files_count = files.length;
@@ -111,6 +112,10 @@ export class Symfinder{
         console.log("Number of constructors variants: " + await this.neoGraph.getNbConstructorVariants());
         console.log("Number of method level variants: " + await this.neoGraph.getNbMethodLevelVariants());
         console.log("Number of class level variants: " + await this.neoGraph.getNbClassLevelVariants());
+        console.log("Number of variant files: " + await this.neoGraph.getNbVariantFiles());
+        console.log("Number of variant folder: " + await this.neoGraph.getNbVariantFolders());
+        console.log("Number of vp folder: " + await this.neoGraph.getNbVPFolders());
+        console.log("Number of proximity entities: " + await this.neoGraph.getNbProximityEntity());
         console.log("Number of nodes: " + stats.nodes_count);
         console.log("Number of relationships: " + stats.relationships_count);
         console.log("Duration: "+this.msToTime(timeEnd-timeStart));
@@ -218,6 +223,50 @@ export class Symfinder{
         return files;
     }
 
+    /**
+     * Detect folder with the proximity analyse describe in scientific TER article
+     * This method annoted folder and files with :
+     * VP_FOLDER
+     * VARIANT_FOLDER
+     * VARIANT_FILE
+     * SUPER_VARIANT_FILE
+     */
+    async proximityFolderDetection(): Promise<void>{
+
+        await this.neoGraph.setProximityFolder();
+        var vpFoldersPath: string[] = await this.neoGraph.getAllVPFoldersPath();
+
+        let i = 0;
+        let len = vpFoldersPath.length;
+        for(let vpFolderPath of vpFoldersPath){
+            i++;
+            process.stdout.write("\rSearch core files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+")");
+            var variantFilesNameSet: string[] = await this.neoGraph.getVariantFilesNameForVPFolderPath(vpFolderPath);
+            var foldersPath: string[] = await this.neoGraph.getFoldersPathForVPFolderPath(vpFolderPath);
+
+            var isSuperVariantFile = true;
+            for(let variantFileName of variantFilesNameSet){
+                var superVariantFilesNode: Node[] = [];
+                for(let folderPath of foldersPath){
+
+                    let currentFile: Node | undefined = await this.neoGraph.getVariantFileForFolderPath(folderPath, variantFileName);
+                    if(currentFile === undefined){
+                        isSuperVariantFile = false;
+                        break;
+                    }
+                    else superVariantFilesNode.push(currentFile)
+                }
+                if(isSuperVariantFile){
+                    for(let superVariantFileNode of superVariantFilesNode){
+                        await this.neoGraph.addLabelToNode(superVariantFileNode, EntityAttribut.CORE_FILE)
+                    }
+                }
+            }
+        }
+        if(i > 0)
+            process.stdout.write("\rSearch core files: "+ (((i) / len) * 100).toFixed(0) +"% ("+i+"/"+len+"), done.\n");
+    }
+
     private createProjectJson(src: string, content: string): ExperimentResult {
         let paths = src.split('/');
         return {
@@ -233,6 +282,7 @@ export class Symfinder{
     private async sendToServer(src: string, http_path: string, content: string) {
         console.log("CREATE PROJECT JSON : ");
         const result = this.createProjectJson(src, content);
+        console.log(result)
         console.log("\n################Sending request ...\n")
         await axios.post(http_path, result).catch((reason: any) => console.log(reason))
                                                     .then(() => console.log("Data has been correctly sent"))

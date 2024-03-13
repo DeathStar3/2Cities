@@ -16,6 +16,10 @@ export class City3D {
     // Is this road the main road
     road: Road3D;
 
+    highway: Road3D;
+
+    file_road: Road3D;
+
     links: Link[] = [];
 
     floor: Mesh;
@@ -29,12 +33,16 @@ export class City3D {
 
     private init(entities: EntitiesList) {
         this.road = new Road3D(this.scene, entities.district as VPVariantsImplem, this.config, "Class district");
+        this.file_road = new Road3D(this.scene, entities.file_district as VPVariantsImplem, this.config, "File district")
+        this.highway = new Road3D(this.scene, null, this.config);
+        this.highway.forcedLength = 10;
     }
 
     private findSrcLink(name: string): Building3D {
         let res = this.road.get(name);
         if (res !== undefined)
             return res
+        return this.file_road.get(name);
     }
 
     private registerLink(link: Link3D, src: Building3D, dest: Building3D) {
@@ -53,7 +61,8 @@ export class City3D {
         };
 
         this.road.build(this.config);
-
+        this.highway.build(this.config);
+        this.file_road.build(this.config);
         this.links.forEach(l => {
             let type = l.type;
             // we only want to show INSTANTIATE type links since the visualization is based off IMPLEMENTS & EXTENDS hierarchy
@@ -90,12 +99,15 @@ export class City3D {
 
     place() {
         this.road.place(0, 0, 1, 0);
+        this.highway.place(this.road.getRoadLength(), 0, 1, 0);
+        this.file_road.place(this.road.getRoadLength() + this.highway.getRoadLength(), 0, 1, 0);
         this.floor.setPositionWithLocalVector(new Vector3(this.getSize() / 2, -0.01, 0));
     }
 
     render() {
         this.road.render(this.config);
-
+        this.highway.render(this.config)
+        this.file_road.render(this.config);
         let mat = new StandardMaterial("FloorMat", this.scene);
         mat.ambientColor = Color3.FromHexString("#222222");
         mat.diffuseColor = Color3.FromHexString("#222222");

@@ -19,11 +19,13 @@ export class ApiAndBlacklistController implements SubMenuInterface {
         const menuOrientation = SubMenuController.createMenu("Orientation and Level usage", true, parent);
         ApiAndBlacklistController.rangeParentElement = menuOrientation;
         const menuAPIClasses = SubMenuController.createMenu("API classes", true, parent);
+        const menuAPIFiles = SubMenuController.createMenu("API files", true, parent);
         const menuBlacklist = SubMenuController.createMenu("Blacklist", true, parent);
 
         if (UIController.config) {
             this.populateOrientationAndLevelUsage(menuOrientation);
             this.populateApiClasses(menuAPIClasses);
+            this.populateApiFiles(menuAPIFiles);
             this.populateBlackList(menuBlacklist);
         }
     }
@@ -89,6 +91,20 @@ export class ApiAndBlacklistController implements SubMenuInterface {
 
         this.createClassInputAPI(inputs, apiClasses, parent);
         console.log("Api: ", apiClasses, ", inputs: ", inputs);
+    }
+
+    private populateApiFiles(parent: HTMLElement) {
+        const apiFiles = UIController.config.api_classes;
+        const inputs = [];
+
+        // API files
+        for (const element of apiFiles) {
+            if (element.startsWith("./"))
+                this.createFileInputAPI(inputs, apiFiles, parent, element);
+        }
+
+        this.createFileInputAPI(inputs, apiFiles, parent);
+        console.log("File api: ", apiFiles, ", inputs: ", inputs);
     }
 
     private createClassInputBlackList(inputs, blackListClasses, parent, text?: string) {
@@ -197,6 +213,64 @@ export class ApiAndBlacklistController implements SubMenuInterface {
                     } else if (input.value !== "") { // if is the last input and has a value, then add a new input text at the end.
                         apiClasses.push(input.value);
                         this.createClassInputAPI(inputs, apiClasses, parent);
+                        UIController.updateScene(CriticalLevel.REPARSE_DATA);
+                    }
+
+                    className = input.value;
+                }
+            }
+        })
+    }
+
+    private createFileInputAPI(inputs, apiClasses, parent, text?: string) {
+        let className = text || "";
+        const input = SubMenuController.createOnlyInputText(className, "./path/to/file.ts", parent);
+
+        input.setAttribute("list", "datalist-files");
+
+        inputs.push(input);
+
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === "Clear") {
+                const isInputLastInTheList = inputs.indexOf(input) == inputs.length - 1;
+                const isAlreadyInBlacklist = apiClasses.indexOf(input.value) !== -1;
+
+                // Handle error where the input hasn't change
+                if (className === input.value) {
+                    ToastController.addToast("The input hasn't change...", ToastType.INFO);
+                    return;
+                }
+
+                // Handle error where the input already exist in another input text
+                if (isAlreadyInBlacklist) {
+                    ToastController.addToast("The class: '" + input.value + "' already exist in the blacklist. You can't add it a second time...", ToastType.WARNING);
+                    input.value = className; // reset value to the last one
+                    return;
+                }
+
+                if ((!SearchbarController.fileSet.has(input.value) && input.value !== "") || UIController.config.blacklist.includes(input.value)) { // the search key doesn't exist
+                    input.style.border = "1px solid red";
+                    if (UIController.config.blacklist.includes(input.value)) {
+                        ToastController.addToast("Unable to register " + input.value + " as a API class because it is an blacklisted class", ToastType.WARNING, false)
+                    }
+                } else {
+                    input.style.border = "1px solid #ced4da";
+                    document.getElementById("loading-frame").style.display = 'inline-block';
+
+                    // Update the config and scene depending on the position in the list of the input box
+                    if (!isInputLastInTheList) {
+                        if (input.value === "") { // clear an input that is not at the end, so remove it from the list
+                            apiClasses.splice(apiClasses.indexOf(className), 1);
+                            input.parentElement.remove(); // input has a parent div generated with it
+                            UIController.updateScene(CriticalLevel.REPARSE_DATA);
+                        } else {
+                            apiClasses[apiClasses.indexOf(className)] = input.value;
+                            UIController.updateScene(CriticalLevel.REPARSE_DATA);
+                        }
+
+                    } else if (input.value !== "") { // if is the last input and has a value, then add a new input text at the end.
+                        apiClasses.push(input.value);
+                        this.createFileInputAPI(inputs, apiClasses, parent);
                         UIController.updateScene(CriticalLevel.REPARSE_DATA);
                     }
 

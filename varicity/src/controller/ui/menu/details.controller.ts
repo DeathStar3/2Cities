@@ -138,7 +138,7 @@ export class DetailsController implements SubMenuInterface {
                     // case "METHOD":
                     case "USAGE":
                     case "CHILD":
-                    case "CODE_DUPLICATED":
+                    case "CODE_CLONE":
                     case "CORE_CONTENT":
                         paths.push("./images/menu-icons/class-types/relation-type/" + type + ".svg");
                         break;
