@@ -1,4 +1,4 @@
-import {Color, ConfigClones, ConfigColor, ConfigInterface, D3Config} from "../entities/config.interface";
+import {Color, ConfigClones, ConfigColor, ConfigInterface, D3Config, D3FnfConfig} from "../entities/config.interface";
 import {Orientation} from "./orientation.enum";
 import {Vector3} from "@babylonjs/core";
 
@@ -27,6 +27,7 @@ export class Config implements ConfigInterface {
     name?: string;
     description: string;
     building: D3Config;
+    fnf_base: D3FnfConfig;
     // building: ConfigColor;
     // district: ConfigColor;
     district: D3Config;

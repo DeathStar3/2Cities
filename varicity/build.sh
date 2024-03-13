@@ -20,4 +20,4 @@
 # Copyright 2018-2021 Philippe Collet <philippe.collet@univ-cotedazur.fr>
 #
 
-docker build -t deathstar3/varicity:local .
+docker build --no-cache -t deathstar3/varicity-ts:local .

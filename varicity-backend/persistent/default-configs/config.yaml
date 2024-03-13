@@ -43,6 +43,21 @@ building:
       - name: "API"
         color: "#000000"
 
+fnf_base:
+  padding: 0.2
+  display:
+    file_size: "adaptative"
+  colors:
+    base:
+      - name: "VP_FOLDER"
+        color: "#ff5733"
+      - name: "VARIANT_FOLDER"
+        color: "#5ee7c0"
+      - name: "VARIANT_FILE"
+        color: "#df5ee7"
+      - name: "CORE_FILE"
+        color: "#860d3f"
+
 district:
   padding: 0
   colors:

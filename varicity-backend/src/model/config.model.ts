@@ -48,6 +48,16 @@ export interface D3Config {
   colors: ConfigColor;
 }
 
+export interface D3FnfConfig {
+  padding: number;
+  display: DisplayInterface;
+  colors: ConfigFnfColor;
+}
+
+export interface ConfigFnfColor {
+  base: Color[]
+}
+
 export interface ConfigColor {
   // colors: {
   edges: Color[]; // HEX color string
@@ -70,6 +80,7 @@ export class VaricityConfig {
   username: string;
   timestamp: string; //isodate
   building: D3Config;
+  fnf_base: D3FnfConfig;
   // building: ConfigColor;
   // district: ConfigColor;
   district: D3Config;

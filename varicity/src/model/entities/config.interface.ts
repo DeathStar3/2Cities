@@ -14,6 +14,10 @@ export interface ConfigColor {
     // }
 }
 
+export interface ConfigFnfColor {
+    base: Color[]
+}
+
 export enum FileDislayEnum {
     FORCE = "force",
     ADAPTATIVE = "adaptative"
@@ -29,6 +33,12 @@ export interface D3Config {
     colors: ConfigColor;
 }
 
+export interface D3FnfConfig {
+    padding: number;
+    display: DisplayInterface;
+    colors: ConfigFnfColor;
+}
+
 export interface ConfigClones {
     map: Map<string, {
         original: Building3D,
@@ -40,6 +50,7 @@ export interface ConfigInterface {
     id?: string; //for persistence
     projectId?: string; //for persistence
     building: D3Config;
+    fnf_base: D3FnfConfig
     // building: ConfigColor;
     district: D3Config;
     // district: ConfigColor;
