@@ -1,5 +1,5 @@
 import {Building3D} from "./building3D";
-import {Mesh, MeshBuilder, Scene, Texture, Vector3} from "@babylonjs/core";
+import {Color3, Mesh, MeshBuilder, Scene, Texture, Vector3, StandardMaterial} from "@babylonjs/core";
 import {Building} from "../../../model/entities/building.interface";
 import {Config} from "../../../model/entitiesImplems/config.model";
 import {Building3DFactory} from "../3Dfactory/building3D.factory";
@@ -33,6 +33,9 @@ export class FileBuilding3D extends Building3D {
 		if (this.auto_scale) this.padding = 0.005
 	}
 
+	/**
+	 * Determines how to place classes on top of file base cylinder
+	 */
 	private placeClasses() {
 		const elements = this.elementModel.exportedClasses.map(model => Building3DFactory.createBuildingMesh(model as Building, 0, this.scene, this.config));
 		elements.sort(
@@ -49,7 +52,7 @@ export class FileBuilding3D extends Building3D {
 		}
 
 		if (elements.length > 0)
-			console.log("The classes ", elements, " were not included in the display for file ", this.elementModel.name);
+			console.log("The classes ", elements, " were not included in the display for file ", this.elementModel.name); // log classes not places
 	}
 
 	build() {
@@ -72,6 +75,13 @@ export class FileBuilding3D extends Building3D {
 		return super.getWidth() * this.scale;
 	}
 
+	/**
+	 *  Renders File base cylinder
+	 * @param scale 
+	 * @param sideOrientation 
+	 * @param updatable 
+	 * @returns 
+	 */
 	protected renderBaseElement(
 		scale : number = 1,
 		sideOrientation: number = Mesh.DEFAULTSIDE,
@@ -87,17 +97,6 @@ export class FileBuilding3D extends Building3D {
 			},
 			this.scene
 		);
-	}
-
-	private changeColorIfForced() {
-		if (this.elementModel.force_color !== undefined) {
-			let color = this.elementModel.force_color;
-
-			this.mat.ambientColor = color;
-			this.mat.diffuseColor = color;
-			this.mat.emissiveColor = color;
-			this.mat.specularColor = color;
-		}
 	}
 
 	private drawMatrix(start_x, start_z, end_x, end_z, y, dim) {
@@ -128,10 +127,7 @@ export class FileBuilding3D extends Building3D {
 	render() {
 		let old_types = Object.assign([], this.elementModel.types); // Save all the types that had the file
 		this.elementModel.types = this.elementModel.types.filter(elem => elem !== "API"); // Remove API to not display a hat
-
 		super.render(this.config, this.scale);
-
-		this.changeColorIfForced();
 
 		for (const line of this.hat_city) // Attach links to building in hat_city
 			line.forEach(building => {

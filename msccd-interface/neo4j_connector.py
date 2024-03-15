@@ -2,7 +2,6 @@ from neo4j import GraphDatabase
 from neo4j import Record
 from typing import Dict, List
 
-from db_types import RelationTypes
 
 
 class Neo4jConnection:

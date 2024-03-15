@@ -1,13 +1,13 @@
-import {EntitiesList} from "../../../model/entitiesList";
-import {NodeElement, VariabilityMetricsName} from "../symfinder_elements/nodes/node.element";
-import {ClassImplem} from "../../../model/entitiesImplems/classImplem.model";
-import {LinkElement} from "../symfinder_elements/links/link.element";
-import {LinkImplem} from "../../../model/entitiesImplems/linkImplem.model";
-import {VPVariantsImplem} from "../../../model/entitiesImplems/vpVariantsImplem.model";
+import { EntitiesList } from "../../../model/entitiesList";
+import { NodeElement, VariabilityMetricsName } from "../symfinder_elements/nodes/node.element";
+import { ClassImplem } from "../../../model/entitiesImplems/classImplem.model";
+import { LinkElement } from "../symfinder_elements/links/link.element";
+import { LinkImplem } from "../../../model/entitiesImplems/linkImplem.model";
+import { VPVariantsImplem } from "../../../model/entitiesImplems/vpVariantsImplem.model";
 import { JsonInputInterface, LinkInterface, NodeInterface } from "../../../model/entities/jsonInput.interface";
-import {Config} from "../../../model/entitiesImplems/config.model";
-import {ParsingStrategy} from "./parsing.strategy.interface";
-import {Orientation} from "../../../model/entitiesImplems/orientation.enum";
+import { Config } from "../../../model/entitiesImplems/config.model";
+import { ParsingStrategy } from "./parsing.strategy.interface";
+import { Orientation } from "../../../model/entitiesImplems/orientation.enum";
 import { Color3 } from "@babylonjs/core";
 
 /**
@@ -18,61 +18,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
     private static readonly FILE_CLASS_LINK_TYPES = ["EXPORT", "IMPORT"];
     private static readonly FILE_LINK_TYPES = ["CHILD", "CORE_CONTENT", "CODE_CLONE"]
 
-    // public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
-    //     console.log('Analyzing with VP and variants strategy: ', data);
-    //     console.log('Config used: ', config);
-    //     if (data) {
-    //         let nodesList: NodeElement[] = [];
-    //         const apiList: NodeElement[] = [];
-
-    //         data.nodes.forEach(n => {
-    //             let node = this.nodeInterface2nodeElement(n);
-    //             this.checkAndAddApiClass(node, config, apiList);
-    //             nodesList.push(node);
-    //         });
-
-    //         const linkElements = data.links
-    //             .map(l => new LinkElement(l.source, l.target, l.type));
-    //         const allLinks = data.alllinks
-    //             .map(l => new LinkElement(l.source, l.target, l.type));
-    //         const hierarchyLinks = allLinks.filter(l => config.hierarchy_links.includes(l.type));
-
-
-    //         nodesList.forEach(n => {
-    //             n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n , nodesList, linkElements).length);
-    //         });
-
-    //         this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation);
-
-    //         const d = this.buildDistricts(nodesList, hierarchyLinks, config.orientation);
-
-    //         let result = new EntitiesList();
-    //         result.district = d;
-
-    //         if (config.api_classes !== undefined) {
-    //             data.allnodes.filter(
-    //                 nod => config.api_classes.includes(nod.name)
-    //                     && !nodesList.map(no => no.name).includes(nod.name)
-    //             ).forEach(n => {
-    //                 let node = this.nodeInterface2nodeElement(n, false);
-    //                 node.types.push("API");
-    //                 let c = new ClassImplem(node, node.compositionLevel);
-    //                 result.district.addBuilding(c);
-    //             });
-    //         }
-    //         this.addAllLink(allLinks, result);
-
-    //         // log for non-vp non-variant nodes
-    //         console.log(data.allnodes.filter(nod => !nodesList.map(no => no.name).includes(nod.name)).map(n => n.name));
-
-    //         // log the results
-    //         console.log("Result of parsing: ", result);
-    //         return result;
-    //     }
-    //     throw new Error('Data is undefined');
-    // }
-
-        public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
+    public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
         console.log('Analyzing with VP and variants strategy: ', data);
         console.log('Config used: ', config);
         if (data) {
@@ -115,18 +61,6 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     .filter(link => link.source === file.name)
                     .map(link => this.findNodeByName(link.target, nodesList))
             });
-
-            // Give a color to all duplicate set of file
-            const duplicates = this.findDuplicatedFiles(
-                fileList.filter(l => l.types.includes("FILE")),
-                fileLinks.filter(l => l.type === "CORE_CONTENT")
-            )
-            const colors: Color3[] = this.pickColorsForNElements(duplicates.filter(array => array.length > 1).length);
-            duplicates.filter(array => array.length > 1).forEach(array => {
-                let color = colors.pop();
-                array.forEach(file => file.forceColor = color);
-            });
-
 
             this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation); // Add composition level to classes
             this.buildComposition(fileHierarchyLinks, fileList, apiList, 0, config.orientation); // Add composition level to files ?
@@ -332,10 +266,10 @@ export class VPVariantsStrategy implements ParsingStrategy {
             let result = new VPVariantsImplem(new ClassImplem(
                 nodeElement,
                 nodeElement.compositionLevel,
-                nodeElement.forceColor
+                // nodeElement.forceColor
             ));
 
-            result.vp.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement,0));
+            result.vp.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement, 0));
 
             children.forEach(c => {
                 const r = this.buildDistrict(c, nodes, links, level + 1, orientation);
@@ -350,10 +284,10 @@ export class VPVariantsStrategy implements ParsingStrategy {
             let result = new ClassImplem(
                 nodeElement,
                 nodeElement.compositionLevel,
-                nodeElement.forceColor
+                // nodeElement.forceColor
             );
-            
-            result.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement,0));
+
+            result.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement, 0));
 
             return result;
         }
@@ -442,7 +376,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
             let nb_try = 0;
             do {
                 color = Color3.Random();
-                nb_try ++
+                nb_try++
             } while (colors.some(c => this.areColorClose(color, c)) && nb_try < max_try);
             colors.push(color);
         }

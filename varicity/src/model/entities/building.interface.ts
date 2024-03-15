@@ -19,8 +19,6 @@ export abstract class Building implements Node {
 
     exportedClasses: Node[];
 
-    force_color: Color3 = undefined;
-
     constructor() {
         this.types = [];
     }

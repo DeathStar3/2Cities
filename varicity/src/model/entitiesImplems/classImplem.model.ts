@@ -4,11 +4,10 @@ import { Color3 } from "@babylonjs/core";
 
 export class ClassImplem extends Building {
 
-    constructor(node: Node, level: number, force_color?: Color3) {
+    constructor(node: Node, level: number) {
         super();
         Object.assign(this, node);
         this.compLevel = level;
-        this.force_color = force_color;
     }
 
     public getHeight(field: string): number {

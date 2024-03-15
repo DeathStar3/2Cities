@@ -174,7 +174,7 @@ export class Building3D extends Element3D {
         sideOrientation: number = Mesh.DEFAULTSIDE,
         updatable: boolean = false
         ): Mesh {
-        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) {
+        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
                 {
@@ -246,14 +246,34 @@ export class Building3D extends Element3D {
                     mat.emissiveColor = new Color3(1, 0, 0);
                     mat.specularColor = new Color3(0, 0, 0);
                 }
-            } else {
-                mat.ambientColor = new Color3(1, 0, 0);
-                mat.diffuseColor = new Color3(1, 0, 0);
-                mat.emissiveColor = new Color3(1, 0, 0);
-                mat.specularColor = new Color3(0, 0, 0);
             }
         }
 
+        return mat;
+    }
+
+    private createDirectoryDefaultMaterial() {
+        let mat = new StandardMaterial(this.elementModel.name + "Mat", this.scene);
+
+        if (this.config.fnf_base.colors.base) {
+            const baseColor = this.getColor(this.config.fnf_base.colors.base, this.elementModel.types)
+            if (baseColor !== undefined) {
+                mat.ambientColor = Color3.FromHexString(baseColor);
+                mat.diffuseColor = Color3.FromHexString(baseColor);
+                mat.emissiveColor = Color3.FromHexString(baseColor);
+                mat.specularColor = Color3.FromHexString("#000000");
+            } else {
+                mat.ambientColor = new Color3(0, 1, 0);
+                mat.diffuseColor = new Color3(0, 1, 0);
+                mat.emissiveColor = new Color3(0, 1, 0);
+                mat.specularColor = new Color3(0, 0, 0);
+            }
+        } else {
+            mat.ambientColor = new Color3(1, 0, 0);
+            mat.diffuseColor = new Color3(1, 0, 0);
+            mat.emissiveColor = new Color3(1, 0, 0);
+            mat.specularColor = new Color3(0, 0, 0);
+        }
         return mat;
     }
 
@@ -423,8 +443,12 @@ export class Building3D extends Element3D {
         this.highlightLayer = new HighlightLayer("hl", this.scene);
 
         this.renderOutlineElement(scale);
-
-        this.mat = this.createDefaultMaterial();
+        
+        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) {
+            this.mat = this.createDirectoryDefaultMaterial();
+        } else {
+            this.mat = this.createDefaultMaterial();
+        }
 
         // New way to display a metric: city fade
         this.displayMetricByCityFade(this.mat);
