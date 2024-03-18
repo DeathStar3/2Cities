@@ -392,6 +392,10 @@ export class Building3D extends Element3D {
         this.d3Model.edgesColor = new Color4(rgb[0], rgb[1], rgb[2], 1)
     }
 
+    /**
+     * These are the three action between mouse and buildings
+     * Pointer over, Pointer out and select
+     */
     protected setupActionManager() {
         this.d3Model.actionManager = new ActionManager(this.scene);
 

@@ -1,5 +1,5 @@
 import {Building3D} from "./building3D";
-import {Color3, Mesh, MeshBuilder, Scene, Texture, Vector3, StandardMaterial} from "@babylonjs/core";
+import {Mesh, MeshBuilder, Scene, Texture, Vector3} from "@babylonjs/core";
 import {Building} from "../../../model/entities/building.interface";
 import {Config} from "../../../model/entitiesImplems/config.model";
 import {Building3DFactory} from "../3Dfactory/building3D.factory";
@@ -37,27 +37,34 @@ export class FileBuilding3D extends Building3D {
 	 * Determines how to place classes on top of file base cylinder
 	 */
 	private placeClasses() {
+		console.log("in place classes")
+		console.log(this.elementModel)
 		const elements = this.elementModel.exportedClasses.map(model => Building3DFactory.createBuildingMesh(model as Building, 0, this.scene, this.config));
-		elements.sort(
-			(a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
+		elements.sort((a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
 		for (let x = 0; x < this.max_x; x++) {
+			console.log(x)
 			this.hat_city.push([])
 			for (let z = 0; z < this.max_z; z++) {
+				if (elements.length === 0) {
+					break;
+				}
+				console.log(z)
 				const elem = elements.pop();
 				elem.padding = 0.2
 				this.hat_city[x].push(elem);
-
 				this.class_width = Math.max(this.class_width, elem.getWidth()); // Minus 0.4 to remove some padding
 			}
+			if (elements.length === 0) {
+				break;
+			}
 		}
-
 		if (elements.length > 0)
 			console.log("The classes ", elements, " were not included in the display for file ", this.elementModel.name); // log classes not places
 	}
 
-	build() {
+	public buildFile(): Building3D[] {
 		const length = this.elementModel.exportedClasses.length;
-		let dim = Math.floor(Math.sqrt(length));
+		let dim = Math.ceil(Math.sqrt(length));
 		this.max_x = this.max_z = dim;
 		this.placeClasses();
 
@@ -65,6 +72,13 @@ export class FileBuilding3D extends Building3D {
 			const diameter = (this.class_width * this.max_x) / Math.cos(Math.PI / 4);
 			this.scale = diameter / this.elementModel.getWidth(this.config.variables.width);
 		}
+		let hatBuildings: Building3D[] = [];
+		for (let line of this.hat_city) {
+			line.forEach(building => {
+				hatBuildings.push(building);
+			});
+		}
+		return hatBuildings
 	}
 
 	place(x: number, z: number) {

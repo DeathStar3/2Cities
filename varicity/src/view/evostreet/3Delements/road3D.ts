@@ -4,6 +4,7 @@ import {Element3D} from '../../common/3Dinterfaces/element3D.interface';
 import {Building3D} from '../../common/3Delements/building3D';
 import {VPVariantsImplem} from "../../../model/entitiesImplems/vpVariantsImplem.model";
 import { Building3DFactory } from "../../common/3Dfactory/building3D.factory";
+import { FileBuilding3D } from '../../common/3Delements/file-building3D';
 
 export class Road3D extends Element3D {
     padding: number = 0;
@@ -21,7 +22,10 @@ export class Road3D extends Element3D {
     // Building
     rightVariants: Building3D[] = [];
 
-    // In my opinion, this is the starting point of the road (the building with the pyramid on top).
+    // List of Buildings placed on top of File buildings (the classes buildings of Clone City)
+    hatBuildings: Building3D[] = [];
+
+    // This is the starting point of the road (the building with the pyramid on top).
     vp: Building3D;
 
     vector: Vector3;
@@ -158,8 +162,15 @@ export class Road3D extends Element3D {
         let building: Building3D = undefined;
         if (this.vp && this.vp.getName() === name) return this.vp;
         const arrConcat = this.leftVariants.concat(this.rightVariants);
+        for (let b of this.hatBuildings) {
+            if (b.getName() == name) {
+                // console.log(`returning hat building ${b.getName()}`);
+                return b;
+            }
+        }
         for (let b of arrConcat) {
             if (b.getName() == name) {
+                // console.log(`returning building ${b.getName()}`);
                 return b;
             }
         }
@@ -167,6 +178,7 @@ export class Road3D extends Element3D {
         for (let d of roadsConcat) {
             let b = d.get(name);
             if (b != undefined) {
+                // console.log(`returning building ${b.getName()}`);
                 return b;
             }
         }
@@ -184,13 +196,32 @@ export class Road3D extends Element3D {
                         } else {
                             let d3 = Building3DFactory.createBuildingMesh(b, 0, this.scene, config);
                             config.clones.map.set(b.name, {original: d3, clones: []});
+                            if (d3 instanceof FileBuilding3D) {
+                                // files buildings are build here
+                                let hats = d3.buildFile();
+                                hats.forEach(building => {
+                                    this.hatBuildings.push(building)
+                                });
+                            } else {
+                                // Class buildings are build here
+                                d3.build();
+                            }
                             d3.build();
                             buildings3D.push(d3);
                         }
                     } else {
                         let d3 = Building3DFactory.createBuildingMesh(b, 0, this.scene, config);
-                        d3.build();
-                        buildings3D.push(d3);
+                        if (d3 instanceof FileBuilding3D) {
+                            // console.log("building file building")
+                            let hats = d3.buildFile();
+                            hats.forEach(building => {
+                                this.hatBuildings.push(building)
+                            });
+                        } else {
+                            // console.log("building plain building")
+                            d3.build();
+                        }                        
+                        buildings3D.push(d3);                      
                     }
                 }
             }

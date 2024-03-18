@@ -49,6 +49,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
                 .map(l => new LinkElement(l.source, l.target, l.type, l.percentage));
             const fileClassLinks = data.alllinks.filter(l => VPVariantsStrategy.FILE_CLASS_LINK_TYPES.includes(l.type));
             const fileHierarchyLinks = fileLinks.filter(l => config.hierarchy_links.includes(l.type))
+             
 
             nodesList.forEach(n => {
                 n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n, nodesList, linkElements).length);
@@ -89,12 +90,12 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     result.district.addBuilding(c);
                 });
             }
-
+            
             this.addAllLink(allLinks, result);
             this.addAllLink(fileLinks, result);
 
             // log for non-vp non-variant nodes
-            console.log(data.allnodes.filter(nod => !nodesList.map(no => no.name).includes(nod.name)).map(n => n.name));
+            // console.log(data.allnodes.filter(nod => !nodesList.map(no => no.name).includes(nod.name)).map(n => n.name));
 
             // log the results
             console.log("Result of parsing: ", result);
