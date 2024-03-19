@@ -164,13 +164,11 @@ export class Road3D extends Element3D {
         const arrConcat = this.leftVariants.concat(this.rightVariants);
         for (let b of this.hatBuildings) {
             if (b.getName() == name) {
-                // console.log(`returning hat building ${b.getName()}`);
                 return b;
             }
         }
         for (let b of arrConcat) {
             if (b.getName() == name) {
-                // console.log(`returning building ${b.getName()}`);
                 return b;
             }
         }
@@ -178,7 +176,6 @@ export class Road3D extends Element3D {
         for (let d of roadsConcat) {
             let b = d.get(name);
             if (b != undefined) {
-                // console.log(`returning building ${b.getName()}`);
                 return b;
             }
         }
@@ -212,13 +209,11 @@ export class Road3D extends Element3D {
                     } else {
                         let d3 = Building3DFactory.createBuildingMesh(b, 0, this.scene, config);
                         if (d3 instanceof FileBuilding3D) {
-                            // console.log("building file building")
                             let hats = d3.buildFile();
                             hats.forEach(building => {
                                 this.hatBuildings.push(building)
                             });
                         } else {
-                            // console.log("building plain building")
                             d3.build();
                         }                        
                         buildings3D.push(d3);                      
