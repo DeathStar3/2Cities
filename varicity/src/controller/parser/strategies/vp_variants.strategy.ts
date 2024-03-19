@@ -15,7 +15,7 @@ import { Color3 } from "@babylonjs/core";
  */
 export class VPVariantsStrategy implements ParsingStrategy {
     private static readonly FILE_TYPES = ["FILE", "DIRECTORY"];
-    private static readonly FILE_CLASS_LINK_TYPES = ["EXPORT", "IMPORT"];
+    private static readonly FILE_CLASS_LINK_TYPES = ["EXPORT"];
     private static readonly FILE_LINK_TYPES = ["CHILD", "CORE_CONTENT", "CODE_CLONE"]
 
     public parse(data: JsonInputInterface, config: Config, project: string): EntitiesList {
