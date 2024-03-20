@@ -346,19 +346,35 @@ export class Road3D extends Element3D {
         // if config -> district -> colors -> faces is defined
         if (config.district.colors.faces) {
             if (this.vp) {
-                const vPColors = config.district.colors.faces.filter(c => c.name === "VP");
-                if (vPColors.length > 0) {
-                    mat.ambientColor = Color3.FromHexString(vPColors[0].color);
-                    mat.diffuseColor = Color3.FromHexString(vPColors[0].color);
-                    mat.emissiveColor = Color3.FromHexString(vPColors[0].color);
-                    mat.specularColor = Color3.FromHexString("#000000");
+                if (this.vp.elementModel.name.startsWith("experiments")) {
+                    const folderRoadColor = config.district.colors.faces.filter(c => c.name === "FOLDER");
+                    if (folderRoadColor.length > 0) {
+                        mat.ambientColor = Color3.FromHexString(folderRoadColor[0].color);
+                        mat.diffuseColor = Color3.FromHexString(folderRoadColor[0].color);
+                        mat.emissiveColor = Color3.FromHexString(folderRoadColor[0].color);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    } else {
+                        const defaultVPColor = "#FFFFFF";
+                        mat.ambientColor = Color3.FromHexString(defaultVPColor);
+                        mat.diffuseColor = Color3.FromHexString(defaultVPColor);
+                        mat.emissiveColor = Color3.FromHexString(defaultVPColor);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    }
                 } else {
-                    const defaultVPColor = "#FFFFFF";
-                    mat.ambientColor = Color3.FromHexString(defaultVPColor);
-                    mat.diffuseColor = Color3.FromHexString(defaultVPColor);
-                    mat.emissiveColor = Color3.FromHexString(defaultVPColor);
-                    mat.specularColor = Color3.FromHexString("#000000");
-                }
+                    const vPColors = config.district.colors.faces.filter(c => c.name === "VP");
+                    if (vPColors.length > 0) {
+                        mat.ambientColor = Color3.FromHexString(vPColors[0].color);
+                        mat.diffuseColor = Color3.FromHexString(vPColors[0].color);
+                        mat.emissiveColor = Color3.FromHexString(vPColors[0].color);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    } else {
+                        const defaultVPColor = "#FFFFFF";
+                        mat.ambientColor = Color3.FromHexString(defaultVPColor);
+                        mat.diffuseColor = Color3.FromHexString(defaultVPColor);
+                        mat.emissiveColor = Color3.FromHexString(defaultVPColor);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    } 
+                } 
             } else {
                 const pacColors = config.district.colors.faces.filter(c => c.name === "PACKAGE");
                 if (pacColors.length > 0) {

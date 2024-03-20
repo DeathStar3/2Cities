@@ -71,6 +71,8 @@ district:
         color: "#801A2E"
       - name: "VP"
         color: "#1A8039"
+      - name: "FOLDER"
+        color: "#2c1e7b"
 
 link:
   colors:
