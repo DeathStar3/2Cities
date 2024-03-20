@@ -158,6 +158,7 @@ export class FileBuilding3D extends Building3D {
 						building.center.add(new Vector3(0, this.getHeight(), 0))
 					)
 					building.render(this.config, scale);
+					building.displayExportedClass()
 					building.d3Model.translate(new Vector3(0, 1, 0), this.getHeight());
 				}
 				z += offset_z;

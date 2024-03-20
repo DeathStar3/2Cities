@@ -383,6 +383,13 @@ export class Building3D extends Element3D {
         }
     }
 
+    displayExportedClass() {
+        this.mat.emissiveTexture = new Texture(
+			`${Building3D.TEXTURE_PATH}/exported_class.svg`,
+			this.scene
+		);
+    }
+
     protected renderEdges() {
         this.d3Model.enableEdgesRendering();
         this.d3Model.edgesWidth = this.edgesWidth;
