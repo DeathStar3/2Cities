@@ -33,28 +33,32 @@ export class FileBuilding3D extends Building3D {
 		if (this.auto_scale) this.padding = 0.005
 	}
 
+	/**
+	 * Determines how to place classes on top of file base cylinder
+	 */
 	private placeClasses() {
 		const elements = this.elementModel.exportedClasses.map(model => Building3DFactory.createBuildingMesh(model as Building, 0, this.scene, this.config));
-		elements.sort(
-			(a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
+		elements.sort((a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
 		for (let x = 0; x < this.max_x; x++) {
 			this.hat_city.push([])
 			for (let z = 0; z < this.max_z; z++) {
+				if (elements.length === 0) {
+					break;
+				}
 				const elem = elements.pop();
 				elem.padding = 0.2
 				this.hat_city[x].push(elem);
-
 				this.class_width = Math.max(this.class_width, elem.getWidth()); // Minus 0.4 to remove some padding
 			}
+			if (elements.length === 0) {
+				break;
+			}
 		}
-
-		if (elements.length > 0)
-			console.log("The classes ", elements, " were not included in the display for file ", this.elementModel.name);
 	}
 
-	build() {
+	public buildFile(): Building3D[] {
 		const length = this.elementModel.exportedClasses.length;
-		let dim = Math.floor(Math.sqrt(length));
+		let dim = Math.ceil(Math.sqrt(length));
 		this.max_x = this.max_z = dim;
 		this.placeClasses();
 
@@ -62,6 +66,13 @@ export class FileBuilding3D extends Building3D {
 			const diameter = (this.class_width * this.max_x) / Math.cos(Math.PI / 4);
 			this.scale = diameter / this.elementModel.getWidth(this.config.variables.width);
 		}
+		let hatBuildings: Building3D[] = [];
+		for (let line of this.hat_city) {
+			line.forEach(building => {
+				hatBuildings.push(building);
+			});
+		}
+		return hatBuildings
 	}
 
 	place(x: number, z: number) {
@@ -72,6 +83,13 @@ export class FileBuilding3D extends Building3D {
 		return super.getWidth() * this.scale;
 	}
 
+	/**
+	 *  Renders File base cylinder
+	 * @param scale 
+	 * @param sideOrientation 
+	 * @param updatable 
+	 * @returns 
+	 */
 	protected renderBaseElement(
 		scale : number = 1,
 		sideOrientation: number = Mesh.DEFAULTSIDE,
@@ -87,17 +105,6 @@ export class FileBuilding3D extends Building3D {
 			},
 			this.scene
 		);
-	}
-
-	private changeColorIfForced() {
-		if (this.elementModel.force_color !== undefined) {
-			let color = this.elementModel.force_color;
-
-			this.mat.ambientColor = color;
-			this.mat.diffuseColor = color;
-			this.mat.emissiveColor = color;
-			this.mat.specularColor = color;
-		}
 	}
 
 	private drawMatrix(start_x, start_z, end_x, end_z, y, dim) {
@@ -128,18 +135,7 @@ export class FileBuilding3D extends Building3D {
 	render() {
 		let old_types = Object.assign([], this.elementModel.types); // Save all the types that had the file
 		this.elementModel.types = this.elementModel.types.filter(elem => elem !== "API"); // Remove API to not display a hat
-
 		super.render(this.config, this.scale);
-
-		this.changeColorIfForced();
-
-		for (const line of this.hat_city) // Attach links to building in hat_city
-			line.forEach(building => {
-				building.links = this.links.filter(
-					link => link.dest.elementModel.name === building.elementModel.name ||
-						link.src.elementModel.name === building.elementModel.name
-				);
-			});
 
 		//max_x = matrix dimension
 		const inner_square_dim = this.elementModel.getWidth(this.config.variables.width) * this.scale * Math.sqrt(2) / 2;
@@ -162,6 +158,7 @@ export class FileBuilding3D extends Building3D {
 						building.center.add(new Vector3(0, this.getHeight(), 0))
 					)
 					building.render(this.config, scale);
+					building.displayExportedClass()
 					building.d3Model.translate(new Vector3(0, 1, 0), this.getHeight());
 				}
 				z += offset_z;

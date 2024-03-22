@@ -49,7 +49,7 @@ export class DetailsController implements SubMenuInterface {
     private static populateModel(building: any, parent: HTMLElement) {
         SubMenuController.createShortReadonlyText("Origin", building.origin, parent)
         SubMenuController.createShortReadonlyText("Name", building.name, parent)
-        console.log("Types of " + building.name + ": " + building.types)
+        // console.log("Types of " + building.name + ": " + building.types)
         SubMenuController.createIconDisplaySVG("Types", this.getIconPaths(building.types), parent);
 
         SubMenuController.createShortReadonlyText("Comp. level", building.compLevel.toString(), parent)
@@ -64,7 +64,7 @@ export class DetailsController implements SubMenuInterface {
         })
     }
 
-    private static populateLinks(obj: Building3D, parent: HTMLElement) {
+    private static populateLinks(obj: Building3D, parent: HTMLElement) { // to check
 
         for (let l of obj.links) {
 

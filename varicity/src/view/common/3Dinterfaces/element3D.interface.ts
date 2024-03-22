@@ -1,6 +1,8 @@
 import {Config} from './../../../model/entitiesImplems/config.model';
 import {Mesh, Scene} from "@babylonjs/core";
 import {Color} from "../../../model/entities/config.interface";
+import { Building } from '../../../model/entities/building.interface';
+import { Building3D } from '../3Delements/building3D';
 
 export abstract class Element3D {
 

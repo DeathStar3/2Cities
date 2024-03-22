@@ -4,6 +4,7 @@ import {Element3D} from '../../common/3Dinterfaces/element3D.interface';
 import {Building3D} from '../../common/3Delements/building3D';
 import {VPVariantsImplem} from "../../../model/entitiesImplems/vpVariantsImplem.model";
 import { Building3DFactory } from "../../common/3Dfactory/building3D.factory";
+import { FileBuilding3D } from '../../common/3Delements/file-building3D';
 
 export class Road3D extends Element3D {
     padding: number = 0;
@@ -21,7 +22,10 @@ export class Road3D extends Element3D {
     // Building
     rightVariants: Building3D[] = [];
 
-    // In my opinion, this is the starting point of the road (the building with the pyramid on top).
+    // List of Buildings placed on top of File buildings (the classes buildings of Clone City)
+    hatBuildings: Building3D[] = [];
+
+    // This is the starting point of the road (the building with the pyramid on top).
     vp: Building3D;
 
     vector: Vector3;
@@ -158,6 +162,11 @@ export class Road3D extends Element3D {
         let building: Building3D = undefined;
         if (this.vp && this.vp.getName() === name) return this.vp;
         const arrConcat = this.leftVariants.concat(this.rightVariants);
+        for (let b of this.hatBuildings) {
+            if (b.getName() == name) {
+                return b;
+            }
+        }
         for (let b of arrConcat) {
             if (b.getName() == name) {
                 return b;
@@ -184,13 +193,30 @@ export class Road3D extends Element3D {
                         } else {
                             let d3 = Building3DFactory.createBuildingMesh(b, 0, this.scene, config);
                             config.clones.map.set(b.name, {original: d3, clones: []});
+                            if (d3 instanceof FileBuilding3D) {
+                                // files buildings are build here
+                                let hats = d3.buildFile();
+                                hats.forEach(building => {
+                                    this.hatBuildings.push(building)
+                                });
+                            } else {
+                                // Class buildings are build here
+                                d3.build();
+                            }
                             d3.build();
                             buildings3D.push(d3);
                         }
                     } else {
                         let d3 = Building3DFactory.createBuildingMesh(b, 0, this.scene, config);
-                        d3.build();
-                        buildings3D.push(d3);
+                        if (d3 instanceof FileBuilding3D) {
+                            let hats = d3.buildFile();
+                            hats.forEach(building => {
+                                this.hatBuildings.push(building)
+                            });
+                        } else {
+                            d3.build();
+                        }                        
+                        buildings3D.push(d3);                      
                     }
                 }
             }
@@ -320,19 +346,35 @@ export class Road3D extends Element3D {
         // if config -> district -> colors -> faces is defined
         if (config.district.colors.faces) {
             if (this.vp) {
-                const vPColors = config.district.colors.faces.filter(c => c.name === "VP");
-                if (vPColors.length > 0) {
-                    mat.ambientColor = Color3.FromHexString(vPColors[0].color);
-                    mat.diffuseColor = Color3.FromHexString(vPColors[0].color);
-                    mat.emissiveColor = Color3.FromHexString(vPColors[0].color);
-                    mat.specularColor = Color3.FromHexString("#000000");
+                if (this.vp.elementModel.name.startsWith("experiments")) {
+                    const folderRoadColor = config.district.colors.faces.filter(c => c.name === "FOLDER");
+                    if (folderRoadColor.length > 0) {
+                        mat.ambientColor = Color3.FromHexString(folderRoadColor[0].color);
+                        mat.diffuseColor = Color3.FromHexString(folderRoadColor[0].color);
+                        mat.emissiveColor = Color3.FromHexString(folderRoadColor[0].color);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    } else {
+                        const defaultVPColor = "#FFFFFF";
+                        mat.ambientColor = Color3.FromHexString(defaultVPColor);
+                        mat.diffuseColor = Color3.FromHexString(defaultVPColor);
+                        mat.emissiveColor = Color3.FromHexString(defaultVPColor);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    }
                 } else {
-                    const defaultVPColor = "#FFFFFF";
-                    mat.ambientColor = Color3.FromHexString(defaultVPColor);
-                    mat.diffuseColor = Color3.FromHexString(defaultVPColor);
-                    mat.emissiveColor = Color3.FromHexString(defaultVPColor);
-                    mat.specularColor = Color3.FromHexString("#000000");
-                }
+                    const vPColors = config.district.colors.faces.filter(c => c.name === "VP");
+                    if (vPColors.length > 0) {
+                        mat.ambientColor = Color3.FromHexString(vPColors[0].color);
+                        mat.diffuseColor = Color3.FromHexString(vPColors[0].color);
+                        mat.emissiveColor = Color3.FromHexString(vPColors[0].color);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    } else {
+                        const defaultVPColor = "#FFFFFF";
+                        mat.ambientColor = Color3.FromHexString(defaultVPColor);
+                        mat.diffuseColor = Color3.FromHexString(defaultVPColor);
+                        mat.emissiveColor = Color3.FromHexString(defaultVPColor);
+                        mat.specularColor = Color3.FromHexString("#000000");
+                    } 
+                } 
             } else {
                 const pacColors = config.district.colors.faces.filter(c => c.name === "PACKAGE");
                 if (pacColors.length > 0) {

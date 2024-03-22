@@ -5,6 +5,7 @@ import {SubMenuInterface} from "./sub-menu.interface";
 import {MetricController} from "./metric.controller";
 import {DetailsController} from "./details.controller";
 import {BuildingController} from "./building.controller";
+import { FoldersAndFilesController } from "./folders-and-files.controller";
 import {DistrictController} from "./district.controller";
 import {ApiAndBlacklistController} from "./api-and-blacklist.controller";
 import {ProjectConfigMenuController} from "./project-config-menu.controller";
@@ -33,11 +34,11 @@ export class MenuController {
 
         MenuController.createMenuElement("Information", "information.svg", new DetailsController(), false, false, true);
         MenuController.createMenuElement("Building", "building.svg", new BuildingController());
+        MenuController.createMenuElement("Folders and Files", "fnf.svg", new FoldersAndFilesController()); 
         MenuController.createMenuElement("District", "district.svg", new DistrictController());
         MenuController.createMenuElement("Link", "links.svg", new LinkController());
         MenuController.createMenuElement("APIs and Blacklist", "api_2.svg", new ApiAndBlacklistController());
         MenuController.createMenuElement("Metrics", "metric-entrypoints.svg", new MetricController(), false, false, true);
-
         MenuController.createMenuElement("Save", "save.svg", new SaveMenuController(), true, true, false, true);
         MenuController.createMenuElement("Documentation", "documentation.svg", new DocController(), true, true);
         MenuController.createMenuElement("Settings", "settings.svg", new SettingsController(), true);

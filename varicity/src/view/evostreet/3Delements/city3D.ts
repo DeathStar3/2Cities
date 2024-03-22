@@ -38,11 +38,30 @@ export class City3D {
         this.highway.forcedLength = 10;
     }
 
-    private findSrcLink(name: string): Building3D {
-        let res = this.road.get(name);
-        if (res !== undefined)
-            return res
-        return this.file_road.get(name);
+    private findInClass(name: string): Building3D {
+        return this.road.get(name);
+    }
+
+    private findInClone(name: string): Building3D {
+        return this.file_road.get(name)
+    }
+
+    private LinkInClassCity(link: Link) {
+        let srcBuilding = this.findInClass(link.source.name);
+        let targetBuilding = this.findInClass(link.target.name);
+        if (srcBuilding !== undefined && targetBuilding !== undefined) {
+            let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
+            this.registerLink(l, srcBuilding, targetBuilding);
+        }
+    }
+
+    private LinkInCloneCity(link: Link) {
+        let srcBuilding = this.findInClone(link.source.name);
+        let targetBuilding = this.findInClone(link.target.name);
+        if (srcBuilding !== undefined && targetBuilding !== undefined) {
+            let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
+            this.registerLink(l, srcBuilding, targetBuilding);
+        }       
     }
 
     private registerLink(link: Link3D, src: Building3D, dest: Building3D) {
@@ -64,14 +83,8 @@ export class City3D {
         this.highway.build(this.config);
         this.file_road.build(this.config);
         this.links.forEach(l => {
-            let type = l.type;
-            // we only want to show INSTANTIATE type links since the visualization is based off IMPLEMENTS & EXTENDS hierarchy
-            let src = this.findSrcLink(l.source.name);
-            let dest = this.findSrcLink(l.target.name);
-            if (src !== undefined && dest !== undefined) {
-                let link = Link3DFactory.createLink(src, dest, type, l.percentage, this.scene, this.config);
-                this.registerLink(link, src, dest);
-            }
+            this.LinkInClassCity(l);
+            this.LinkInCloneCity(l);
         });
 
         for (let [, value] of this.config.clones.map) {

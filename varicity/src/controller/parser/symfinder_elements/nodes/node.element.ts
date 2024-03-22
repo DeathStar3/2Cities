@@ -20,7 +20,6 @@ export class NodeElement implements Node {
     compositionLevel: number = -1;
     origin: string = "";
     exportedClasses: Node[];
-    forceColor: Color3 = undefined;
 
     constructor(name: string) {
         this.name = name;
