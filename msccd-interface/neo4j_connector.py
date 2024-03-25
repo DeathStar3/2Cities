@@ -24,13 +24,13 @@ class Neo4jConnection:
         return list(result)
     
     @staticmethod
-    def _link_code_clones(tx, src_path: str, clone_path: str) -> List:
+    def _link_code_clones(tx, src_path: str, clone_path: str, clone_type: str, src_lines: str, target_lines: str) -> List:
         request = """
                 MATCH (src:FILE {path: $src_path})
                 MATCH (clone:FILE {path: $clone_path})
-                MERGE (src)-[:CODE_CLONE]->(clone)
+                MERGE (src)-[:CODE_CLONE {type: $clone_type, src_lines: $src_lines, target_lines: $target_lines}]->(clone)
                """
-        result = tx.run(request, src_path=src_path, clone_path=clone_path)
+        result = tx.run(request, src_path=src_path, clone_path=clone_path, clone_type=clone_type, src_lines=src_lines, target_lines=target_lines)
         return list(result)
     
     @staticmethod
@@ -52,9 +52,7 @@ class Neo4jConnection:
                    type(r) = 'EXTENDS' OR 
                    type(r) = 'IMPORT' OR 
                    type(r) = 'LOAD' OR 
-                   type(r) = 'CHILD'  OR 
-                   type(r) = 'CORE_CONTENT' OR 
-                   type(r) = 'CODE_CLONE')
+                   type(r) = 'CHILD')
             AND NOT ('OUT_OF_SCOPE' IN labels(m)) 
             AND NOT ('OUT_OF_SCOPE' IN labels(n)) 
             AND NOT ('VARIABLE' IN labels (m)) 
@@ -75,7 +73,7 @@ class Neo4jConnection:
             AND NOT ('OUT_OF_SCOPE' IN labels(m)) 
             AND NOT ('OUT_OF_SCOPE' IN labels(n))
             WITH CASE WHEN m.path IS NULL THEN m.name ELSE m.path END AS mname, CASE WHEN n.path IS NULL THEN n.name ELSE n.path END AS nname,r
-            WITH collect ({source:nname,target:mname,percentage: r.codePercent, type:type(r)}) AS rela 
+            WITH collect ({source:nname,target:mname,percentage: r.codePercent, clone: r.type, src_range: r.src_lines, trgt_range: r.target_lines, type:type(r)}) AS rela 
             RETURN {links:rela}
             """
         result = tx.run(request)
@@ -90,9 +88,7 @@ class Neo4jConnection:
                    type(r) = 'EXTENDS' OR 
                    type(r) = 'IMPORT' OR 
                    type(r) = 'LOAD' OR 
-                   type(r) = 'CHILD'  OR 
-                   type(r) = 'CORE_CONTENT' OR 
-                   type(r) = 'CODE_CLONE')
+                   type(r) = 'CHILD')
             AND NOT ('OUT_OF_SCOPE' IN labels(m)  OR 'FUNCTION' IN labels(m) OR 'VARIABLE' IN labels(m) OR 'PROPERTY' IN labels(m)) 
             AND NOT ('OUT_OF_SCOPE' IN labels(n) OR 'FUNCTION' IN labels(n) OR 'VARIABLE' IN labels(n) OR 'PROPERTY' IN labels(n)) 
             WITH CASE WHEN m.path IS NULL THEN m.name ELSE m.path END AS mname, CASE WHEN n.path IS NULL THEN n.name ELSE n.path END AS nname,r
@@ -142,12 +138,15 @@ class Neo4jConnection:
                 file_path
             )
         
-    def link_clones(self, src_path: str, clone_path: str) -> None:
+    def link_clones(self, src_path: str, clone_path: str, clone_type, src_lines, target_lines) -> None:
         with self.driver.session(database="neo4j") as session:
             linked_nodes = session.execute_write(
                 self._link_code_clones,
                 src_path,
-                clone_path
+                clone_path,
+                clone_type,
+                src_lines,
+                target_lines,
             )
 
     def link_core(self, src_path: str, clone_path: str) -> None:
@@ -173,6 +172,7 @@ class Neo4jConnection:
             dups_list = dups_links[0][0]["links"]
             for elt in dups_list:
                 self.db_dict["links"].append(elt)
+                self.db_dict["alllinks"].append(elt)
 
 
             all_links = session.execute_read(
