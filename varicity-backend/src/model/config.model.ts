@@ -55,6 +55,7 @@ export interface D3FnfConfig {
 }
 
 export interface ConfigFnfColor {
+  edges: Color[],
   base: Color[]
 }
 

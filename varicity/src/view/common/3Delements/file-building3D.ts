@@ -11,6 +11,7 @@ import {FileDislayEnum} from "../../../model/entities/config.interface";
  */
 export class FileBuilding3D extends Building3D {
 	private hat_city: Building3D[][] = [];
+	public crown: Building3D;
 	private max_x: number = 5;
 	private max_z: number = 5;
 	private scale: number = 1;
@@ -56,11 +57,20 @@ export class FileBuilding3D extends Building3D {
 		}
 	}
 
+	private placeCrown(){
+		let crown = this.elementModel.cloneCrown;
+		let crownBuilding = Building3DFactory.createBuildingMesh(crown as Building, 0, this.scene, this.config);
+		this.crown = crownBuilding;
+	}
+
 	public buildFile(): Building3D[] {
 		const length = this.elementModel.exportedClasses.length;
 		let dim = Math.ceil(Math.sqrt(length));
 		this.max_x = this.max_z = dim;
 		this.placeClasses();
+		if (this.elementModel.cloneCrown) {
+			this.placeCrown();
+		}
 
 		if (this.auto_scale && length > 0){ // Compute scaling for folder mesh
 			const diameter = (this.class_width * this.max_x) / Math.cos(Math.PI / 4);
@@ -166,6 +176,15 @@ export class FileBuilding3D extends Building3D {
 			z = z_i;
 			x += offset_x;
 		}
+
+		if (this.crown) {
+			this.crown.place(this.center.x, this.center.z);
+			this.crown.render(this.config, this.scale);
+			this.crown.d3Model.material.alpha = 0.2
+			this.crown.d3Model.translate(new Vector3(0, 1, 0), this.getHeight());
+		}
+
+
 
 		this.updateBuildingTexture();
 

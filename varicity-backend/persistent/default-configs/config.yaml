@@ -49,6 +49,8 @@ fnf_base:
     file_size: "adaptative"
   colors:
     base:
+      - name: "CROWN"
+        color: "#ffffff"
       - name: "VP_FOLDER"
         color: "#ff5733"
       - name: "VARIANT_FOLDER"
@@ -61,6 +63,9 @@ fnf_base:
         color: "#df5ee7"
       - name: "FILE"
         color: "#555555"
+    edges:
+      - name: "CROWN"
+        color: "#ff1300"
       
 
 district:

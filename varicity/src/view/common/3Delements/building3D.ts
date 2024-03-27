@@ -153,7 +153,7 @@ export class Building3D extends Element3D {
     }
 
     place(x: number, z: number) {
-        const increaseHeight = ["API", "FACTORY", "DECORATOR", "TEMPLATE", "STRATEGY"];
+        const increaseHeight = ["API", "FACTORY", "DECORATOR", "TEMPLATE", "STRATEGY", "CROWN"];
         let halfHeight = this.getHeight() / 2;
         this.center = new Vector3(x, halfHeight + this.depth * 30, z);
         this.bot = this.center.add(new Vector3(0, -halfHeight, 0));
@@ -414,6 +414,15 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOverTrigger
                 },
                 () => {
+                    console.log(this)
+                    if (this.elementModel.types.includes("CROWN")) {
+                        this.top = this.center.add(new Vector3(0, this.getHeight() * 10, 0));
+                        /**
+                         * check this method  BABYLON.Vector3.TransformCoordinates
+                         *  this PG https://playground.babylonjs.com/#TRAIXW#5
+                         *  this page https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/transform_coords
+                         * */  
+                    }
                     this.highlight(true);
                     this.links.forEach(l => l.display(undefined, true));
                     if (SelectedBuildingController.selected.length == 0) {
@@ -455,7 +464,7 @@ export class Building3D extends Element3D {
 
         this.renderOutlineElement(scale);
         
-        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) {
+        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY") ||this.elementModel.types.includes("CROWN")) {
             this.mat = this.createDirectoryDefaultMaterial();
         } else {
             this.mat = this.createDefaultMaterial();
@@ -589,7 +598,7 @@ export class Building3D extends Element3D {
         }
 
         // Default edge coloring
-        this.renderEdges();
+        // this.renderEdges();
 
         if (this.config.building.colors.edges) {
             const edgesColor = this.getColor(this.config.building.colors.edges, this.elementModel.types);
@@ -601,6 +610,16 @@ export class Building3D extends Element3D {
             }
 
             this.setupActionManager();
+        }
+
+        if (this.config.fnf_base.colors.edges) {
+            const edgesColor = this.getColor(this.config.fnf_base.colors.edges, this.elementModel.types)
+            if (edgesColor !== undefined) {
+                this.d3Model.enableEdgesRendering();
+                const c = Color3.FromHexString(edgesColor);
+                this.d3Model.edgesColor = new Color4(c.r, c.g, c.b, 1);
+            }
+
         }
     }
 

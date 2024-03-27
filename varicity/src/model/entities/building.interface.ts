@@ -19,6 +19,9 @@ export abstract class Building implements Node {
 
     exportedClasses: Node[];
 
+    isCloned: boolean
+    cloneCrown: Node
+
     constructor() {
         this.types = [];
     }
@@ -27,5 +30,7 @@ export abstract class Building implements Node {
 
     abstract getWidth(field: string): number;
 
-
+    // setCloned(isCloned: boolean) {
+    //     this.isCloned = isCloned
+    // }
 }

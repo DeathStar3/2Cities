@@ -5,6 +5,8 @@ import {Building3D} from '../../common/3Delements/building3D';
 import {VPVariantsImplem} from "../../../model/entitiesImplems/vpVariantsImplem.model";
 import { Building3DFactory } from "../../common/3Dfactory/building3D.factory";
 import { FileBuilding3D } from '../../common/3Delements/file-building3D';
+import { Link } from '../../../model/entities/link.interface';
+import { ClassImplem } from '../../../model/entitiesImplems/classImplem.model';
 
 export class Road3D extends Element3D {
     padding: number = 0;
@@ -24,6 +26,7 @@ export class Road3D extends Element3D {
 
     // List of Buildings placed on top of File buildings (the classes buildings of Clone City)
     hatBuildings: Building3D[] = [];
+    crownBuildings: Building3D[] = [];
 
     // This is the starting point of the road (the building with the pyramid on top).
     vp: Building3D;
@@ -182,6 +185,24 @@ export class Road3D extends Element3D {
         return building;
     }
 
+    // private getImplem(name: string) {
+    //     this.elementModel.buildings.forEach(b => {
+    //         if (b.name === name) {
+    //             return b;
+    //         }
+    //     });
+    // }
+
+    // registerClonedBuilding(config: Config, links: Link[]) {
+    //     links.forEach(l => {
+    //         if (l.type === "CODE_CLONE") {
+    //             let src = this.getImplem(l.source.name);
+    //             let target = this.getImplem(l.target.name);
+
+    //         }
+    //     });
+    // }
+
     private buildBuildings(config: Config) {
         const buildings3D: Building3D[] = [];
         this.elementModel.buildings.forEach(b => {
@@ -199,11 +220,12 @@ export class Road3D extends Element3D {
                                 hats.forEach(building => {
                                     this.hatBuildings.push(building)
                                 });
+                                this.crownBuildings.push(d3.crown);
                             } else {
                                 // Class buildings are build here
                                 d3.build();
                             }
-                            d3.build();
+                            // d3.build();
                             buildings3D.push(d3);
                         }
                     } else {

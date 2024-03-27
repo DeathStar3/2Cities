@@ -9,7 +9,6 @@ import { Bridge3D } from "../3Delements/bridge3D";
 export class Link3DFactory {
     public static createLink(src: Building3D, dest: Building3D, type: string, percentage: number, scene: Scene, config: Config): Link3D {
         if (!config.link.display){
-            console.log("here")
             return undefined; 
         } 
         if (config.link.display.air_traffic.includes(type)) return new Link3DImplem(src, dest, type, percentage, scene, config);

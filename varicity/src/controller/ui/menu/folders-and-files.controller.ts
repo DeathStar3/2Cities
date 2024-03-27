@@ -17,11 +17,13 @@ export class FoldersAndFilesController implements SubMenuInterface {
     public createMenu(parent: HTMLElement) {
         const menuPadding = SubMenuController.createMenu("Padding", true, parent);
         const menuBaseColors = SubMenuController.createMenu("Folder and File Base Color", true, parent);
+        const menuEdgesColors = SubMenuController.createMenu("Crown Edges Color", true, parent);
 
         if (UIController.config) {
 
             let padding = UIController.config.fnf_base.padding;
             let colorsBase = UIController.config.fnf_base.colors.base;
+            let colorEdges = UIController.config.fnf_base.colors.edges;
 
             let paddingSelector = SubMenuController.createRange("Padding", padding, 0.2, 2, 0.1, menuPadding);
 
@@ -32,7 +34,7 @@ export class FoldersAndFilesController implements SubMenuInterface {
             });
 
             this.createColorPickerDragAndDrop(colorsBase, menuBaseColors, UIController.config.fnf_base.colors.base);
-
+            this.createColorPickerDragAndDrop(colorEdges, menuEdgesColors, UIController.config.fnf_base.colors.edges);
         }
     }
 

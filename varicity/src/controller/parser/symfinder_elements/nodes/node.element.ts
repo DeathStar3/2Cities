@@ -8,6 +8,7 @@ export interface Node {
     types: string[];
     metrics: Metrics;
     exportedClasses: Node[];
+    cloneCrown?: Node;
 }
 
 export class NodeElement implements Node {
@@ -20,6 +21,7 @@ export class NodeElement implements Node {
     compositionLevel: number = -1;
     origin: string = "";
     exportedClasses: Node[];
+    cloneCrown: NodeElement;
 
     constructor(name: string) {
         this.name = name;

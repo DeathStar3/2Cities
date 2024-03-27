@@ -15,6 +15,7 @@ export interface ConfigColor {
 }
 
 export interface ConfigFnfColor {
+    edges: Color[],
     base: Color[]
 }
 
@@ -43,7 +44,7 @@ export interface ConfigClones {
     map: Map<string, {
         original: Building3D,
         clones: Building3D[]
-    }>
+    }>,
 }
 
 export interface ConfigInterface {

@@ -18,7 +18,7 @@ export class City3D {
 
     highway: Road3D;
 
-    file_road: Road3D;
+    file_road: Road3D;;
 
     links: Link[] = [];
 
@@ -61,7 +61,8 @@ export class City3D {
         if (srcBuilding !== undefined && targetBuilding !== undefined) {
             let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
             this.registerLink(l, srcBuilding, targetBuilding);
-        }       
+        }
+
     }
 
     private registerLink(link: Link3D, src: Building3D, dest: Building3D) {
@@ -76,8 +77,10 @@ export class City3D {
             map: new Map<string, {
                 original: Building3D,
                 clones: Building3D[]
-            }>()
+            }>(), 
         };
+
+        // this.file_road.registerClonedBuilding(this.config, this.links);
 
         this.road.build(this.config);
         this.highway.build(this.config);

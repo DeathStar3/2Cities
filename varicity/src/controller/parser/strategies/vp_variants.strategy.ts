@@ -9,6 +9,8 @@ import { Config } from "../../../model/entitiesImplems/config.model";
 import { ParsingStrategy } from "./parsing.strategy.interface";
 import { Orientation } from "../../../model/entitiesImplems/orientation.enum";
 import { Color3 } from "@babylonjs/core";
+import { Building } from "../../../model/entities/building.interface";
+import { Metrics } from "../../../model/entitiesImplems/metrics.model";
 
 /**
  * Strategy used to parse both Symfinder Java and Symfinder JS results
@@ -48,7 +50,8 @@ export class VPVariantsStrategy implements ParsingStrategy {
                 .filter(l => VPVariantsStrategy.FILE_LINK_TYPES.includes(l.type)) /// Remove all that is not bind to a file or a folder
                 .map(l => new LinkElement(l.source, l.target, l.type, l.percentage));
             const fileClassLinks = data.alllinks.filter(l => VPVariantsStrategy.FILE_CLASS_LINK_TYPES.includes(l.type));
-            const fileHierarchyLinks = fileLinks.filter(l => config.hierarchy_links.includes(l.type))
+            const fileHierarchyLinks = fileLinks.filter(l => config.hierarchy_links.includes(l.type));
+            const cloneLinks = fileLinks.filter(l => l.type === "CODE_CLONE");
              
 
             nodesList.forEach(n => {
@@ -62,6 +65,19 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     .filter(link => link.source === file.name)
                     .map(link => this.findNodeByName(link.target, nodesList))
             });
+
+            cloneLinks.forEach(link => {
+                let srcNode = this.findNodeByName(link.source, fileList);
+                if (srcNode.cloneCrown === undefined) {
+                    let nodeI = this.findNodeByName(link.source, data.nodes);
+                    srcNode.cloneCrown = this.createCrownNode(nodeI);
+                }
+                let targetNode = this.findNodeByName(link.target, fileList);
+                if (targetNode.cloneCrown === undefined) {
+                    let nodeI = this.findNodeByName(link.target, data.nodes);
+                    targetNode.cloneCrown = this.createCrownNode(nodeI);
+                }
+            })
 
             this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation); // Add composition level to classes
             this.buildComposition(fileHierarchyLinks, fileList, apiList, 0, config.orientation); // Add composition level to files ?
@@ -105,15 +121,29 @@ export class VPVariantsStrategy implements ParsingStrategy {
         throw new Error('Data is undefined');
     }
 
+    private createCrownNode(nodeI: NodeInterface): NodeElement {
+        console.log("clone crown for " + nodeI.name)
+        let node = this.nodeInterface2nodeElement(nodeI, false);
+        node.types.push("CROWN");
+        console.log(node)
+        return node;
+    }
+
     private addAllLink(links: LinkElement[], result: EntitiesList) {
         links.forEach(link => {
             const source = result.getBuildingFromName(link.source);
             const target = result.getBuildingFromName(link.target);
             if (source !== undefined && target !== undefined) {
                 result.links.push(new LinkImplem(source, target, link.type, link.percentage));
+                // link.type === "CODE_CLONES" ? this.setClones(source, target, true) : this.setClones(source, target, false);
             }
         })
     }
+
+    // private setClones(src: Building, target: Building, isCloned: boolean) {
+    //     src.setCloned(isCloned);
+    //     target.setCloned(isCloned);
+    // }
 
     /**
      * Check if the given value is not undefined and returns it. If the value is undefined, then return a default value
@@ -271,6 +301,9 @@ export class VPVariantsStrategy implements ParsingStrategy {
             ));
 
             result.vp.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement, 0));
+            if (nodeElement.cloneCrown) {
+                result.vp.cloneCrown = new ClassImplem(nodeElement.cloneCrown, 0);
+            }
 
             children.forEach(c => {
                 const r = this.buildDistrict(c, nodes, links, level + 1, orientation);
@@ -289,7 +322,9 @@ export class VPVariantsStrategy implements ParsingStrategy {
             );
 
             result.exportedClasses = nodeElement.exportedClasses.map(nodeElement => new ClassImplem(nodeElement, 0));
-
+            if (nodeElement.cloneCrown) {
+                result.cloneCrown = new ClassImplem(nodeElement.cloneCrown, 0);
+            }
             return result;
         }
     }
@@ -324,7 +359,9 @@ export class VPVariantsStrategy implements ParsingStrategy {
         return res;
     }
 
-    private findNodeByName(name: string, nodes: NodeElement[]): NodeElement {
+    private findNodeByName(name: string, nodes: NodeInterface[]): NodeInterface;
+    private findNodeByName(name: string, nodes: NodeElement[]): NodeElement;
+    private findNodeByName(name: string, nodes: NodeInterface[] | NodeElement[]): NodeInterface | NodeElement {
         for (const element of nodes) {
             if (element.name === name) {
                 return element;
