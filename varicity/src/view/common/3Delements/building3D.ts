@@ -121,9 +121,9 @@ export class Building3D extends Element3D {
 
         // Highlight the building.
         this.highlight(flag, true);
-        if (element.types.includes("CROWN")) {
-            this.focusScale(flag, true);
-        }
+        // if (element.types.includes("CROWN")) {
+        //     this.focusScale(flag, true);
+        // }
 
         // Display the links.
         console.log("[Building ", element.name, "] Links: ", this.links)
@@ -183,7 +183,7 @@ export class Building3D extends Element3D {
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
                 {
-                    height: this.getHeight() * 2, // Here to change the default size of the mesh
+                    height: this.getHeight() * this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
                     diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
                     sideOrientation: sideOrientation,
                     updatable: updatable
@@ -416,6 +416,7 @@ export class Building3D extends Element3D {
     }
 
     private crownScaleUp() {
+        
         this.d3Model.scaling.y = 20;
         this.d3Model.translate(new Vector3(0,1,0), (this.getHeight())); 
     }
@@ -426,6 +427,7 @@ export class Building3D extends Element3D {
     }
 
     focusScale(arg: boolean, force: boolean = false) {
+        let unfocusedScale = this.d3Model.scaling.y
         if (force) this.focusScaleForce = arg;
         if (!arg && !this.focusScaleForce) {
             this.crownScaleDown();
@@ -449,9 +451,9 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOverTrigger
                 },
                 () => {
-                    if (this.elementModel.types.includes("CROWN")) {
-                        this.focusScale(true); 
-                    }
+                    // if (this.elementModel.types.includes("CROWN")) {
+                    //     this.focusScale(true); 
+                    // }
                     this.highlight(true);
                     this.links.forEach(l => l.display(undefined, true));
                     if (SelectedBuildingController.selected.length == 0) {
@@ -466,9 +468,9 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOutTrigger
                 },
                 () => {
-                    if (this.elementModel.types.includes("CROWN") && this.d3Model.scaling.y !== 1) {
-                        this.focusScale(false);
-                    }
+                    // if (this.elementModel.types.includes("CROWN") && this.d3Model.scaling.y !== 1) {
+                    //     this.focusScale(false);
+                    // }
                     this.highlight(false);
                     this.links.forEach(l => l.display(undefined, false));
                 }

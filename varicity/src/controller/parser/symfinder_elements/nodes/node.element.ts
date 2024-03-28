@@ -53,5 +53,6 @@ export enum VariabilityMetricsName {
     NB_FUNCTIONS = "nbFunctions",
     NB_ATTRIBUTES = "nbAttributes",
     NB_CONSTRUCTOR_VARIANTS = "nbConstructorVariants",
-    NB_VARIANTS = "nbVariants"
+    NB_VARIANTS = "nbVariants",
+    NB_CLONES = "nbClones"
 }

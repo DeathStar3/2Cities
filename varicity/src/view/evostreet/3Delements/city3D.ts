@@ -46,6 +46,10 @@ export class City3D {
         return this.file_road.get(name)
     }
 
+    private findInCrown(name: string): Building3D {
+        return this.file_road.getCrown(name);
+    }
+
     private LinkInClassCity(link: Link) {
         let srcBuilding = this.findInClass(link.source.name);
         let targetBuilding = this.findInClass(link.target.name);
@@ -56,6 +60,7 @@ export class City3D {
     }
 
     private LinkInCloneCity(link: Link) {
+        console.log("here")
         let srcBuilding = this.findInClone(link.source.name);
         let targetBuilding = this.findInClone(link.target.name);
         if (srcBuilding !== undefined && targetBuilding !== undefined) {
@@ -63,6 +68,15 @@ export class City3D {
             this.registerLink(l, srcBuilding, targetBuilding);
         }
 
+    }
+
+    private linkCrown(link: Link) {
+        let srcBuilding = this.findInCrown(link.source.name);
+        let targetBuilding = this.findInCrown(link.target.name);
+        if (srcBuilding !== undefined && targetBuilding !== undefined) {
+            let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
+            this.registerLink(l, srcBuilding, targetBuilding);
+        }
     }
 
     private registerLink(link: Link3D, src: Building3D, dest: Building3D) {
@@ -86,6 +100,13 @@ export class City3D {
         this.highway.build(this.config);
         this.file_road.build(this.config);
         this.links.forEach(l => {
+            // if (l.type === "CODE_CLONE") {
+            //     console.log("clone link")
+            //     this.linkCrown(l);
+            // } else {
+            //     this.LinkInClassCity(l);
+            //     this.LinkInCloneCity(l);
+            // }
             this.LinkInClassCity(l);
             this.LinkInCloneCity(l);
         });

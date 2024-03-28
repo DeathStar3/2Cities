@@ -185,23 +185,13 @@ export class Road3D extends Element3D {
         return building;
     }
 
-    // private getImplem(name: string) {
-    //     this.elementModel.buildings.forEach(b => {
-    //         if (b.name === name) {
-    //             return b;
-    //         }
-    //     });
-    // }
-
-    // registerClonedBuilding(config: Config, links: Link[]) {
-    //     links.forEach(l => {
-    //         if (l.type === "CODE_CLONE") {
-    //             let src = this.getImplem(l.source.name);
-    //             let target = this.getImplem(l.target.name);
-
-    //         }
-    //     });
-    // }
+    getCrown(name: string): Building3D {
+        for (let b of this.crownBuildings) {
+            if (b.getName() == name) {
+                return b;
+            }
+        }
+    }
 
     private buildBuildings(config: Config) {
         const buildings3D: Building3D[] = [];
@@ -220,7 +210,7 @@ export class Road3D extends Element3D {
                                 hats.forEach(building => {
                                     this.hatBuildings.push(building)
                                 });
-                                this.crownBuildings.push(d3.crown);
+                                this.crownBuildings.push(d3.getCrownBuilding());
                             } else {
                                 // Class buildings are build here
                                 d3.build();

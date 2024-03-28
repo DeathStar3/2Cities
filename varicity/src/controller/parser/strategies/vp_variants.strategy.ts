@@ -52,7 +52,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
             const fileClassLinks = data.alllinks.filter(l => VPVariantsStrategy.FILE_CLASS_LINK_TYPES.includes(l.type));
             const fileHierarchyLinks = fileLinks.filter(l => config.hierarchy_links.includes(l.type));
             const cloneLinks = fileLinks.filter(l => l.type === "CODE_CLONE");
-             
+            console.log(`length ${cloneLinks.length}`)
 
             nodesList.forEach(n => {
                 n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n, nodesList, linkElements).length);
@@ -67,15 +67,23 @@ export class VPVariantsStrategy implements ParsingStrategy {
             });
 
             cloneLinks.forEach(link => {
+                let name = "experiments/Vim/src/cmd_line/commandLine.ts"
+                if (link.source === name || link.target === name) {
+                    console.log("apple")
+                }
                 let srcNode = this.findNodeByName(link.source, fileList);
                 if (srcNode.cloneCrown === undefined) {
                     let nodeI = this.findNodeByName(link.source, data.nodes);
                     srcNode.cloneCrown = this.createCrownNode(nodeI);
+                } else {
+                    srcNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
                 }
                 let targetNode = this.findNodeByName(link.target, fileList);
                 if (targetNode.cloneCrown === undefined) {
                     let nodeI = this.findNodeByName(link.target, data.nodes);
                     targetNode.cloneCrown = this.createCrownNode(nodeI);
+                } else {
+                    targetNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
                 }
             })
 
@@ -124,6 +132,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
     private createCrownNode(nodeI: NodeInterface): NodeElement {
         let node = this.nodeInterface2nodeElement(nodeI, false);
         node.types.push("CROWN");
+        node.addMetric(VariabilityMetricsName.NB_CLONES, this.checkAndGetMetric(1));
         return node;
     }
 

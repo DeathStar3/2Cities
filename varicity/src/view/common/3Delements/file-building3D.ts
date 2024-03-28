@@ -63,6 +63,14 @@ export class FileBuilding3D extends Building3D {
 		this.crown = crownBuilding;
 	}
 
+	public getCrownBuilding() {
+		if (this.crown !== undefined) {
+			return this.crown;
+		} else {
+			console.log("crown is undefined")
+		}
+	}
+
 	public buildFile(): Building3D[] {
 		const length = this.elementModel.exportedClasses.length;
 		let dim = Math.ceil(Math.sqrt(length));
@@ -203,11 +211,11 @@ export class FileBuilding3D extends Building3D {
 			//
 			this.updateTextureCoreContent();
 		}
-		else if (this.links.some(l => l.type == "CODE_CLONE")){
-			//
-			this.updateTextureCodeDuplicated(this.links.find(l => l.type === "CODE_CLONE"));
+		// else if (this.links.some(l => l.type == "CODE_CLONE")){
+		// 	//
+		// 	this.updateTextureCodeDuplicated(this.links.find(l => l.type === "CODE_CLONE"));
 
-		}
+		// }
 	}
 
 	private updateTextureCoreContent() {
@@ -217,9 +225,9 @@ export class FileBuilding3D extends Building3D {
 		)
 	}
 
-	private updateTextureCodeDuplicated(link: Link3D) {
-		const percentage = link.percentage ?? 0;
-		const level = Math.floor(percentage / 100 * 7);
-		this.applyCrackTextureForLevel(level, false, this.mat);
-	}
+	// private updateTextureCodeDuplicated(link: Link3D) {
+	// 	const percentage = link.percentage ?? 0;
+	// 	const level = Math.floor(percentage / 100 * 7);
+	// 	this.applyCrackTextureForLevel(level, false, this.mat);
+	// }
 }

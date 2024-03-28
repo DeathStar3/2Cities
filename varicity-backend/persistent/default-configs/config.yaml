@@ -85,7 +85,7 @@ link:
       color: "#ef2222"
     - name: "EXTENDS"
       color: "#3f97ff"
-    - name: "DUPLICATES"
+    - name: "CODE_CLONE"
       color: "#2B914A"
     - name: "USAGE"
       color: "#1A8039"
@@ -93,8 +93,7 @@ link:
     air_traffic:
       - "IMPLEMENTS"
       - "EXTENDS"
-      - "CORE_CONTENT"
-      - "CODE_DUPLICATED"
+      - "CODE_CLONE"
     bridges:
       - "EXPORT"
     underground_road:
