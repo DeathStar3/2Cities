@@ -65,7 +65,7 @@ fnf_base:
         color: "#555555"
     edges:
       - name: "CROWN"
-        color: "#ff1300"
+        color: "#ffffff"
       
 
 district:

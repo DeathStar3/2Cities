@@ -3,9 +3,6 @@ import { Building } from "../../../model/entities/building.interface";
 import { Scene } from "@babylonjs/core";
 import { Config } from "../../../model/entitiesImplems/config.model";
 import { FileBuilding3D } from "../3Delements/file-building3D";
-import { CrownBuilding3D } from "../3Delements/crown3D";
-import { CrownImplem } from "../../../model/entitiesImplems/crown.model"
-import { NodeElement } from "../../../controller/parser/symfinder_elements/nodes/node.element";
 
 export class Building3DFactory {
 

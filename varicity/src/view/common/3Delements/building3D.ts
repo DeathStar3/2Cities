@@ -52,6 +52,8 @@ export class Building3D extends Element3D {
     highlightLayer: HighlightLayer;
     highlightForce: boolean;
 
+    focusScaleForce: boolean;
+
     config: Config;
 
     flag: boolean = false;
@@ -119,6 +121,9 @@ export class Building3D extends Element3D {
 
         // Highlight the building.
         this.highlight(flag, true);
+        if (element.types.includes("CROWN")) {
+            this.focusScale(flag, true);
+        }
 
         // Display the links.
         console.log("[Building ", element.name, "] Links: ", this.links)
@@ -174,7 +179,18 @@ export class Building3D extends Element3D {
         sideOrientation: number = Mesh.DEFAULTSIDE,
         updatable: boolean = false
         ): Mesh {
-        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
+        if (this.elementModel.types.includes("CROWN")) {
+            return MeshBuilder.CreateCylinder(
+                this.elementModel.name,
+                {
+                    height: this.getHeight() * 2, // Here to change the default size of the mesh
+                    diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
+                    sideOrientation: sideOrientation,
+                    updatable: updatable
+                },
+                this.scene);
+        }
+        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
                 {
@@ -399,6 +415,25 @@ export class Building3D extends Element3D {
         this.d3Model.edgesColor = new Color4(rgb[0], rgb[1], rgb[2], 1)
     }
 
+    private crownScaleUp() {
+        this.d3Model.scaling.y = 20;
+        this.d3Model.translate(new Vector3(0,1,0), (this.getHeight())); 
+    }
+
+    private crownScaleDown() {
+        this.d3Model.scaling.y = 1;
+        this.d3Model.translate(new Vector3(0,1,0), -(this.getHeight() * 20));
+    }
+
+    focusScale(arg: boolean, force: boolean = false) {
+        if (force) this.focusScaleForce = arg;
+        if (!arg && !this.focusScaleForce) {
+            this.crownScaleDown();
+        } else if (this.d3Model.scaling.y !== 20) {
+            this.crownScaleUp();
+        }
+    }
+
     /**
      * These are the three action between mouse and buildings
      * Pointer over, Pointer out and select
@@ -414,14 +449,8 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOverTrigger
                 },
                 () => {
-                    console.log(this)
                     if (this.elementModel.types.includes("CROWN")) {
-                        this.top = this.center.add(new Vector3(0, this.getHeight() * 10, 0));
-                        /**
-                         * check this method  BABYLON.Vector3.TransformCoordinates
-                         *  this PG https://playground.babylonjs.com/#TRAIXW#5
-                         *  this page https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/transform_coords
-                         * */  
+                        this.focusScale(true); 
                     }
                     this.highlight(true);
                     this.links.forEach(l => l.display(undefined, true));
@@ -437,6 +466,9 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOutTrigger
                 },
                 () => {
+                    if (this.elementModel.types.includes("CROWN") && this.d3Model.scaling.y !== 1) {
+                        this.focusScale(false);
+                    }
                     this.highlight(false);
                     this.links.forEach(l => l.display(undefined, false));
                 }

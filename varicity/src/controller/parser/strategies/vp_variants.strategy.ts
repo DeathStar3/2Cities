@@ -122,10 +122,8 @@ export class VPVariantsStrategy implements ParsingStrategy {
     }
 
     private createCrownNode(nodeI: NodeInterface): NodeElement {
-        console.log("clone crown for " + nodeI.name)
         let node = this.nodeInterface2nodeElement(nodeI, false);
         node.types.push("CROWN");
-        console.log(node)
         return node;
     }
 
