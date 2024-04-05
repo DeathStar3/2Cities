@@ -50,7 +50,7 @@ fnf_base:
   colors:
     base:
       - name: "CROWN"
-        color: "#ffffff"
+        color: "#f535e1"
       - name: "VP_FOLDER"
         color: "#ff5733"
       - name: "VARIANT_FOLDER"
@@ -65,7 +65,7 @@ fnf_base:
         color: "#555555"
     edges:
       - name: "CROWN"
-        color: "#ffffff"
+        color: "#f535e1"
       
 
 district:

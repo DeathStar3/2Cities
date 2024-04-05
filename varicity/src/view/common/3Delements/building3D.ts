@@ -60,6 +60,8 @@ export class Building3D extends Element3D {
 
     protected mat: StandardMaterial;
 
+    private crownConstanteSize: number = 3;
+
     constructor(scene: Scene, buildingElement: Building, depth: number, config: Config) {
         super(scene);
         this.elementModel = buildingElement;
@@ -83,7 +85,7 @@ export class Building3D extends Element3D {
     }
 
     getHeight(): number {
-        return this.elementModel.getHeight(this.config.variables.height) * this.heightScale;
+        return this.elementModel.types.includes("CROWN") ? this.elementModel.getHeight(this.config.variables.height) : this.elementModel.getHeight(this.config.variables.height) * this.heightScale;
     }
 
     getName() {
@@ -183,7 +185,9 @@ export class Building3D extends Element3D {
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
                 {
-                    height: this.getHeight() * this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
+                    // height: this.crownConstanteSize + this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
+                    // height: this.getHeight() + (this.elementModel.metrics.getMetricValue("nbClones") / 2),
+                    height: this.elementModel.metrics.getMetricValue("nbClones") / 2,
                     diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
                     sideOrientation: sideOrientation,
                     updatable: updatable

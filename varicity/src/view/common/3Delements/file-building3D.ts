@@ -188,8 +188,8 @@ export class FileBuilding3D extends Building3D {
 		if (this.crown) {
 			this.crown.place(this.center.x, this.center.z);
 			this.crown.render(this.config, this.scale);
-			this.crown.d3Model.material.alpha = 0.2
-			this.crown.d3Model.translate(new Vector3(0, 1, 0), this.getHeight() * 2);
+			this.crown.d3Model.material.alpha = 0.1
+			this.crown.d3Model.translate(new Vector3(0, 1, 0),  this.crown.elementModel.metrics.getMetricValue("nbClones") / 4);
 		}
 
 
