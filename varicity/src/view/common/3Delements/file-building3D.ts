@@ -66,8 +66,6 @@ export class FileBuilding3D extends Building3D {
 	public getCrownBuilding() {
 		if (this.crown !== undefined) {
 			return this.crown;
-		} else {
-			console.log("crown is undefined")
 		}
 	}
 

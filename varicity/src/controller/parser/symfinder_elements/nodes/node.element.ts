@@ -9,6 +9,7 @@ export interface Node {
     metrics: Metrics;
     exportedClasses: Node[];
     cloneCrown?: Node;
+    variantFileColor?: string;
 }
 
 export class NodeElement implements Node {
@@ -22,6 +23,7 @@ export class NodeElement implements Node {
     origin: string = "";
     exportedClasses: Node[];
     cloneCrown: NodeElement;
+    variantFileColor: string;
 
     constructor(name: string) {
         this.name = name;

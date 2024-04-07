@@ -60,7 +60,6 @@ export class City3D {
     }
 
     private LinkInCloneCity(link: Link) {
-        console.log("here")
         let srcBuilding = this.findInClone(link.source.name);
         let targetBuilding = this.findInClone(link.target.name);
         if (srcBuilding !== undefined && targetBuilding !== undefined) {

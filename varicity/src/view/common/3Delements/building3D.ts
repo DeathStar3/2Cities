@@ -123,9 +123,6 @@ export class Building3D extends Element3D {
 
         // Highlight the building.
         this.highlight(flag, true);
-        // if (element.types.includes("CROWN")) {
-        //     this.focusScale(flag, true);
-        // }
 
         // Display the links.
         console.log("[Building ", element.name, "] Links: ", this.links)
@@ -297,6 +294,38 @@ export class Building3D extends Element3D {
         return mat;
     }
 
+    private createVariantFileMaterial() {
+        let mat = new StandardMaterial(this.elementModel.name + "Mat", this.scene);
+
+        if (this.elementModel.variantFileColor !== undefined) {
+            let baseColor = this.elementModel.variantFileColor;
+            mat.ambientColor = Color3.FromHexString(baseColor);
+            mat.diffuseColor = Color3.FromHexString(baseColor);
+            mat.emissiveColor = Color3.FromHexString(baseColor);
+            mat.specularColor = Color3.FromHexString("#000000");
+        } 
+        else if (this.config.fnf_base.colors.base) {
+            const baseColor = this.getColor(this.config.fnf_base.colors.base, this.elementModel.types)
+            if (baseColor !== undefined) {
+                mat.ambientColor = Color3.FromHexString(baseColor);
+                mat.diffuseColor = Color3.FromHexString(baseColor);
+                mat.emissiveColor = Color3.FromHexString(baseColor);
+                mat.specularColor = Color3.FromHexString("#000000");
+            } else {
+                mat.ambientColor = new Color3(0, 1, 0);
+                mat.diffuseColor = new Color3(0, 1, 0);
+                mat.emissiveColor = new Color3(0, 1, 0);
+                mat.specularColor = new Color3(0, 0, 0);
+            }
+        } else {
+            mat.ambientColor = new Color3(1, 0, 0);
+            mat.diffuseColor = new Color3(1, 0, 0);
+            mat.emissiveColor = new Color3(1, 0, 0);
+            mat.specularColor = new Color3(0, 0, 0);
+        }
+        return mat
+    }
+
     private displayMetricByCityFade(mat: StandardMaterial) {
         if (this.config.variables.fade && this.config.variables.fade != "") {
             if (this.elementModel.metrics.metrics.has(this.config.variables.fade)) { //Check if the metric wanted exist
@@ -419,27 +448,6 @@ export class Building3D extends Element3D {
         this.d3Model.edgesColor = new Color4(rgb[0], rgb[1], rgb[2], 1)
     }
 
-    private crownScaleUp() {
-        
-        this.d3Model.scaling.y = 20;
-        this.d3Model.translate(new Vector3(0,1,0), (this.getHeight())); 
-    }
-
-    private crownScaleDown() {
-        this.d3Model.scaling.y = 1;
-        this.d3Model.translate(new Vector3(0,1,0), -(this.getHeight() * 20));
-    }
-
-    focusScale(arg: boolean, force: boolean = false) {
-        let unfocusedScale = this.d3Model.scaling.y
-        if (force) this.focusScaleForce = arg;
-        if (!arg && !this.focusScaleForce) {
-            this.crownScaleDown();
-        } else if (this.d3Model.scaling.y !== 20) {
-            this.crownScaleUp();
-        }
-    }
-
     /**
      * These are the three action between mouse and buildings
      * Pointer over, Pointer out and select
@@ -502,7 +510,10 @@ export class Building3D extends Element3D {
 
         this.renderOutlineElement(scale);
         
-        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY") ||this.elementModel.types.includes("CROWN")) {
+        if (this.elementModel.types.includes("VARIANT_FILE") && !this.elementModel.types.includes("CORE_FILE")) {
+            this.mat = this.createVariantFileMaterial();
+        }
+        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY") ||this.elementModel.types.includes("CROWN")) {
             this.mat = this.createDirectoryDefaultMaterial();
         } else {
             this.mat = this.createDefaultMaterial();

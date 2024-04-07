@@ -11,6 +11,11 @@ import { Orientation } from "../../../model/entitiesImplems/orientation.enum";
 import { Color3 } from "@babylonjs/core";
 import { Building } from "../../../model/entities/building.interface";
 import { Metrics } from "../../../model/entitiesImplems/metrics.model";
+import { Color } from "../../../model/entities/config.interface";
+
+const createGenerator = require('golden-number');
+const hexToHsl = require('hex-to-hsl');
+const hsl = require("hsl-to-hex");
 
 /**
  * Strategy used to parse both Symfinder Java and Symfinder JS results
@@ -52,7 +57,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
             const fileClassLinks = data.alllinks.filter(l => VPVariantsStrategy.FILE_CLASS_LINK_TYPES.includes(l.type));
             const fileHierarchyLinks = fileLinks.filter(l => config.hierarchy_links.includes(l.type));
             const cloneLinks = fileLinks.filter(l => l.type === "CODE_CLONE");
-            console.log(`length ${cloneLinks.length}`)
+            const variantFiles = fileList.filter(f => f.types.includes("VARIANT_FILE"));
 
             nodesList.forEach(n => {
                 n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n, nodesList, linkElements).length);
@@ -66,11 +71,27 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     .map(link => this.findNodeByName(link.target, nodesList))
             });
 
-            cloneLinks.forEach(link => {
-                let name = "experiments/Vim/src/cmd_line/commandLine.ts"
-                if (link.source === name || link.target === name) {
-                    console.log("apple")
+            let variantFilesColors: Map<string, { color: string }> = new Map<string, { color: string }>();
+            let seedColor = config.fnf_base.colors.base.filter(c => c.name === "VARIANT_FILE")[0].color;
+            let seedRgb = this.hex2rgb(seedColor);
+            let seedHue = this.rgb2Hsv(seedRgb[0], seedRgb[1], seedRgb[2])
+            let s = seedHue[1];
+            let v = seedHue[2];
+            const generator = createGenerator(seedHue[0]);
+            variantFiles.forEach(f => {
+                let splitted = f.name.split("/")
+                let name = splitted[splitted.length - 1]
+                if (variantFilesColors.has(name)) {
+                    f.variantFileColor = variantFilesColors.get(name).color;
+                } else {
+                    let fHue: number = generator();
+                    let fRgb = this.hsv2Rgb(fHue, s, v);
+                    f.variantFileColor = this.rgb2Hex(fRgb[0], fRgb[1], fRgb[2]);
+                    variantFilesColors.set(name, { color: f.variantFileColor })
                 }
+            });
+
+            cloneLinks.forEach(link => {
                 let srcNode = this.findNodeByName(link.source, fileList);
                 if (srcNode.cloneCrown === undefined) {
                     let nodeI = this.findNodeByName(link.source, data.nodes);
@@ -114,7 +135,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     result.district.addBuilding(c);
                 });
             }
-            
+
             this.addAllLink(allLinks, result);
             this.addAllLink(fileLinks, result);
 
@@ -427,5 +448,105 @@ export class VPVariantsStrategy implements ParsingStrategy {
         }
 
         return colors;
+    }
+
+    /**
+ * Converts an RGB color value to HSV. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes r, g, and b are contained in the set [0, 1] and
+ * returns h, s, and v in the set [0, 1].
+ *
+ * @param   r       The red color value
+ * @param   g       The green color value
+ * @param   b       The blue color value
+ * @return  The HSV representation
+ */
+    private rgb2Hsv(r: number, g: number, b: number): number[] {
+
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, v = max;
+
+        let d = max - min;
+        s = max == 0 ? 0 : d / max;
+
+        if (max == min) {
+            h = 0; // achromatic
+        } else {
+            switch (max) {
+                case r:
+                    h = (g - b) / d + (g < b ? 6 : 0);
+                    break;
+                case g:
+                    h = (b - r) / d + 2;
+                    break;
+                case b:
+                    h = (r - g) / d + 4;
+                    break;
+            }
+
+            h /= 6;
+        }
+
+        return [h, s, v];
+    }
+
+    /**
+     * Converts an HSV color value to RGB. Conversion formula
+     * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+     * Assumes h, s, and v are contained in the set [0, 1] and
+     * returns r, g, and b in the set [0, 255].
+     *
+     * @param   h       The hue
+     * @param   s       The saturation
+     * @param   v       The value
+     * @return  Array           The RGB representation
+     */
+    private hsv2Rgb(h: number, s: number, v: number) {
+        let r, g, b;
+
+        let i = Math.floor(h * 6);
+        let f = h * 6 - i;
+        let p = v * (1 - s);
+        let q = v * (1 - f * s);
+        let t = v * (1 - (1 - f) * s);
+
+        switch (i % 6) {
+            case 0:
+                r = v; g = t; b = p;
+                break;
+            case 1:
+                r = q; g = v; b = p;
+                break;
+            case 2:
+                r = p; g = v; b = t;
+                break;
+            case 3:
+                r = p; g = q; b = v;
+                break;
+            case 4:
+                r = t; g = p; b = v;
+                break;
+            case 5:
+                r = v; g = p; b = q;
+                break;
+        }
+
+        return [r, g, b];
+    }
+
+    private hex2rgb(h: string): number[] {
+        let r = parseInt(h.slice(1, 3), 16);
+        let g = parseInt(h.slice(3, 5), 16);
+        let b = parseInt(h.slice(5, 7), 16);
+
+        return [r, g, b]
+    }
+
+    private rgb2Hex(r: number, g: number, b: number): string {
+        const componentToHex = (c: number) => {
+            const hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+        return "#" + componentToHex(Math.ceil(r)) + componentToHex(Math.ceil(g)) + componentToHex(Math.ceil(b));
     }
 }
