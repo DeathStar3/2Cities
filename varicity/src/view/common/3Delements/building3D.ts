@@ -126,7 +126,19 @@ export class Building3D extends Element3D {
 
         // Display the links.
         console.log("[Building ", element.name, "] Links: ", this.links)
-        this.links.forEach(l => l.display(flag, flag));
+        this.links.forEach(l => {
+            if (l.type === "BRIDGE" || l.type === "CODE_CLONE") {
+                if (l.src == this) {
+                    l.dest.highlight(flag, true);
+                    l.dest.links.forEach(link => link.display(flag, flag));
+                } else {
+                    l.src.highlight(true);
+                    l.src.links.forEach(link => link.display(flag, flag));
+
+                }
+            }
+            l.display(flag, flag);
+        });
 
         if (openInfo) {
             // Display the submenu.
@@ -467,7 +479,20 @@ export class Building3D extends Element3D {
                     //     this.focusScale(true); 
                     // }
                     this.highlight(true);
-                    this.links.forEach(l => l.display(undefined, true));
+                    this.links.forEach(l => {
+                        if (l.type === "BRIDGE" || l.type === "CODE_CLONE") {
+                            if (l.src == this) {
+                                l.dest.highlight(true);
+                                l.dest.links.forEach(link => link.display(undefined, true));
+                            } else {
+                                l.src.highlight(true);
+                                l.src.links.forEach(link => link.display(undefined, true));
+
+                            }
+                        }
+                        l.display(undefined, true);
+
+                    });
                     if (SelectedBuildingController.selected.length == 0) {
                         UIController.displayObjectInfo(this);
                     }
@@ -484,7 +509,18 @@ export class Building3D extends Element3D {
                     //     this.focusScale(false);
                     // }
                     this.highlight(false);
-                    this.links.forEach(l => l.display(undefined, false));
+                    this.links.forEach(l => {
+                        if (l.type === "BRIDGE" || l.type === "CODE_CLONE") {
+                            if (l.src == this) {
+                                l.dest.highlight(false);
+                                l.dest.links.forEach(link => link.display(undefined, false));
+                            } else {
+                                l.src.highlight(false);
+                                l.src.links.forEach(link => link.display(undefined, false));
+                            }
+                        }
+                        l.display(undefined, false);
+                    });
                 }
             )
         );
