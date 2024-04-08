@@ -24,6 +24,9 @@ export class Road3D extends Element3D {
     // Building
     rightVariants: Building3D[] = [];
 
+    classCityBuildings: Building3D[] = [];
+    cloneCityBuildings: Building3D[] = [];
+
     // List of Buildings placed on top of File buildings (the classes buildings of Clone City)
     hatBuildings: Building3D[] = [];
     crownBuildings: Building3D[] = [];

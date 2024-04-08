@@ -40,6 +40,7 @@ export class LinkController implements SubMenuInterface {
             // LinkController.radioBoxListener(SubMenuController.createCustomRadioBox("USAGE", airTraffic.includes('USAGE'), undergroundRoads.includes('USAGE'), displayMenu), 'USAGE');
             // LinkController.radioBoxListener(SubMenuController.createCustomRadioBox("DUPLICATE", airTraffic.includes('DUPLICATE'), undergroundRoads.includes('DUPLICATE'), displayMenu), 'DUPLICATE');
             LinkController.radioBoxListener(SubMenuController.createCustomRadioBox("CODE_CLONE", airTraffic.includes('CODE_CLONE'), undergroundRoads.includes('CODE_CLONE'), displayMenu), 'CODE_CLONE');
+            LinkController.radioBoxListener(SubMenuController.createCustomRadioBox("BRIDGE", airTraffic.includes('BRIDGE'), undergroundRoads.includes('BRIDGE'), displayMenu), 'BRIDGE');
 
             // Hierarchy Links
             const hierarchyLinks = UIController.config.hierarchy_links;

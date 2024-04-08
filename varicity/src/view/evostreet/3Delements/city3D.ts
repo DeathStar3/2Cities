@@ -65,6 +65,10 @@ export class City3D {
         if (srcBuilding !== undefined && targetBuilding !== undefined) {
             let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
             this.registerLink(l, srcBuilding, targetBuilding);
+            if (link.type === "EXPORT") {
+                this.bridgeCities(srcBuilding);
+                this.bridgeCities(targetBuilding);
+            }
         }
 
     }
@@ -82,6 +86,14 @@ export class City3D {
         if (link) {
             src.link(link);
             dest.link(link);
+        }
+    }
+
+    private bridgeCities(srcBuilding: Building3D) {
+        let classBuilding = this.findInClass(srcBuilding.getName());
+        if (classBuilding !== undefined) {
+            let bridge = Link3DFactory.createLink(srcBuilding, classBuilding, "BRIDGE", undefined, this.scene, this.config);
+            this.registerLink(bridge, srcBuilding, classBuilding);
         }
     }
 

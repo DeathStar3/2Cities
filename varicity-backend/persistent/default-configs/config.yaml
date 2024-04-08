@@ -87,6 +87,8 @@ link:
       color: "#3f97ff"
     - name: "CODE_CLONE"
       color: "#2B914A"
+    - name: "BRIDGE"
+      color: "#ff9700"
     - name: "USAGE"
       color: "#1A8039"
   display:
@@ -98,6 +100,7 @@ link:
       - "EXPORT"
     underground_road:
       - "USAGE"
+      - "BRIDGE"
 #      - "CHILD"
 
 hierarchy_links:
