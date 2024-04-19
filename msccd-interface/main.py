@@ -28,10 +28,20 @@ class ExperimentResult:
 
 def is_core_files(src_path: str, clone_path: str, neo4j_runner: Neo4jConnection) -> bool:
     src_node = neo4j_runner.get_node(src_path)
-    src_labels = src_node[0][0].labels
+    try:
+        src_labels = src_node[0][0].labels
+    except Exception as e:
+        print("file not find in db, labeled as not core")
+        print(f"Error returned: {e}")
+        return False
     if "CORE_FILE" in src_labels:
         clone_node = neo4j_runner.get_node(clone_path)
-        clone_labels = clone_node[0][0].labels
+        try:
+            clone_labels = clone_node[0][0].labels
+        except Exception as e:
+            print("file not find in db, labeled as not core")
+            print(f"Error returned: {e}")
+            return False
         return "CORE_FILE" in clone_labels 
     else:
         return False

@@ -19,9 +19,11 @@ export abstract class Building implements Node {
 
     exportedClasses: Node[];
 
-    cloneCrown: Node;
+    cloneCrown?: Node;
 
-    variantFileColor: string;
+    variantFileColor?: string;
+
+    maxClone?: number;
 
     constructor() {
         this.types = [];

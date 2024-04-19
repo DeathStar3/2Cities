@@ -10,6 +10,7 @@ export interface Node {
     exportedClasses: Node[];
     cloneCrown?: Node;
     variantFileColor?: string;
+    maxClone?: number;
 }
 
 export class NodeElement implements Node {
@@ -22,8 +23,9 @@ export class NodeElement implements Node {
     compositionLevel: number = -1;
     origin: string = "";
     exportedClasses: Node[];
-    cloneCrown: NodeElement;
-    variantFileColor: string;
+    cloneCrown?: NodeElement;
+    variantFileColor?: string;
+    maxClone?: number;
 
     constructor(name: string) {
         this.name = name;

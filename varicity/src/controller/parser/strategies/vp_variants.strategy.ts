@@ -90,9 +90,13 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     variantFilesColors.set(name, { color: f.variantFileColor })
                 }
             });
-
+            let maxClone = 0;
+            let cloneNodes: NodeElement[] = []
             cloneLinks.forEach(link => {
                 let srcNode = this.findNodeByName(link.source, fileList);
+                if (!cloneNodes.includes(srcNode)) {
+                    cloneNodes.push(srcNode);
+                }
                 if (srcNode.cloneCrown === undefined) {
                     let nodeI = this.findNodeByName(link.source, data.nodes);
                     srcNode.cloneCrown = this.createCrownNode(nodeI);
@@ -100,12 +104,23 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     srcNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
                 }
                 let targetNode = this.findNodeByName(link.target, fileList);
+                if (!cloneNodes.includes(targetNode)) {
+                    cloneNodes.push(targetNode);
+                }
                 if (targetNode.cloneCrown === undefined) {
                     let nodeI = this.findNodeByName(link.target, data.nodes);
                     targetNode.cloneCrown = this.createCrownNode(nodeI);
                 } else {
                     targetNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
                 }
+                let linkMax = Math.max(srcNode.cloneCrown.metrics.getMetricValue(VariabilityMetricsName.NB_CLONES), targetNode.cloneCrown.metrics.getMetricValue(VariabilityMetricsName.NB_CLONES));
+                if (linkMax > maxClone) {
+                    maxClone = linkMax
+                }
+            });
+
+            cloneNodes.forEach(node => {
+                node.cloneCrown.maxClone = maxClone;
             })
 
             this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation); // Add composition level to classes

@@ -1,6 +1,6 @@
-import {UIController} from '../../../controller/ui/ui.controller';
-import {Config, MetricSpec} from '../../../model/entitiesImplems/config.model';
-import {Element3D} from '../3Dinterfaces/element3D.interface';
+import { UIController } from '../../../controller/ui/ui.controller';
+import { Config, MetricSpec } from '../../../model/entitiesImplems/config.model';
+import { Element3D } from '../3Dinterfaces/element3D.interface';
 import {
     ActionManager,
     Color3,
@@ -14,12 +14,12 @@ import {
     Texture,
     Vector3
 } from '@babylonjs/core';
-import {Building} from '../../../model/entities/building.interface';
-import {Link3D} from '../3Dinterfaces/link3D.interface';
-import {MenuController} from "../../../controller/ui/menu/menu.controller";
-import {SceneRenderer} from "../../sceneRenderer";
-import {DetailsController} from "../../../controller/ui/menu/details.controller";
-import {SelectedBuildingController} from "../../../controller/ui/selected-building.controller";
+import { Building } from '../../../model/entities/building.interface';
+import { Link3D } from '../3Dinterfaces/link3D.interface';
+import { MenuController } from "../../../controller/ui/menu/menu.controller";
+import { SceneRenderer } from "../../sceneRenderer";
+import { DetailsController } from "../../../controller/ui/menu/details.controller";
+import { SelectedBuildingController } from "../../../controller/ui/selected-building.controller";
 
 export class Building3D extends Element3D {
     public static readonly TEXTURE_PATH: string = "./images/visualization-texture";
@@ -101,7 +101,7 @@ export class Building3D extends Element3D {
         if (!arg && !this.highlightForce) {
             this.highlightLayer.removeAllMeshes();
         } else {
-            this.highlightLayer.addMesh(this.d3Model, Color3.Blue());
+            this.highlightLayer.addMesh(this.d3Model, Color3.Purple());
         }
     }
 
@@ -127,14 +127,19 @@ export class Building3D extends Element3D {
         // Display the links.
         console.log("[Building ", element.name, "] Links: ", this.links)
         this.links.forEach(l => {
-            if (l.type === "BRIDGE" || l.type === "CODE_CLONE") {
+            if (l.type === "BRIDGE") {
                 if (l.src == this) {
                     l.dest.highlight(flag, true);
                     l.dest.links.forEach(link => link.display(flag, flag));
                 } else {
                     l.src.highlight(true);
                     l.src.links.forEach(link => link.display(flag, flag));
-
+                }
+            } else if (l.type === "CODE_CLONE") {
+                if (l.src == this) {
+                    l.dest.highlight(flag, true);
+                } else {
+                    l.src.highlight(true);
                 }
             }
             l.display(flag, flag);
@@ -156,7 +161,7 @@ export class Building3D extends Element3D {
                 MenuController.changeImage(infoTab) // Set Information tab icon to selected
             }
             MenuController.selectedTab = infoTab;
-        }else {
+        } else {
             MenuController.closeMenu();
         }
 
@@ -189,7 +194,7 @@ export class Building3D extends Element3D {
         scale: number = 1,
         sideOrientation: number = Mesh.DEFAULTSIDE,
         updatable: boolean = false
-        ): Mesh {
+    ): Mesh {
         if (this.elementModel.types.includes("CROWN")) {
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
@@ -256,7 +261,7 @@ export class Building3D extends Element3D {
     private createDefaultMaterial() {
         let mat = new StandardMaterial(this.elementModel.name + "Mat", this.scene);
 
-        if (this.config.force_color) {
+        if (!this.elementModel.types.includes("BRIDGED")) {
             mat.ambientColor = Color3.FromHexString(this.config.force_color);
             mat.diffuseColor = Color3.FromHexString(this.config.force_color);
             mat.emissiveColor = Color3.FromHexString(this.config.force_color);
@@ -315,7 +320,7 @@ export class Building3D extends Element3D {
             mat.diffuseColor = Color3.FromHexString(baseColor);
             mat.emissiveColor = Color3.FromHexString(baseColor);
             mat.specularColor = Color3.FromHexString("#000000");
-        } 
+        }
         else if (this.config.fnf_base.colors.base) {
             const baseColor = this.getColor(this.config.fnf_base.colors.base, this.elementModel.types)
             if (baseColor !== undefined) {
@@ -437,7 +442,7 @@ export class Building3D extends Element3D {
                 this.applyCrackTextureForLevel(level, isWhiteColor, mat);
             } else {
                 mat.diffuseTexture = new Texture("./images/visualization-texture/crack/" + color + "cross_3.png", this.scene);
-                if(isWhiteColor){
+                if (isWhiteColor) {
                     mat.emissiveTexture = new Texture("./images/visualization-texture/crack/" + color + "cross_3_black.png", this.scene);
                 }
             }
@@ -446,9 +451,9 @@ export class Building3D extends Element3D {
 
     displayExportedClass() {
         this.mat.emissiveTexture = new Texture(
-			`${Building3D.TEXTURE_PATH}/exported_class.svg`,
-			this.scene
-		);
+            `${Building3D.TEXTURE_PATH}/exported_class.svg`,
+            this.scene
+        );
     }
 
     protected renderEdges() {
@@ -480,7 +485,7 @@ export class Building3D extends Element3D {
                     // }
                     this.highlight(true);
                     this.links.forEach(l => {
-                        if (l.type === "BRIDGE" || l.type === "CODE_CLONE") {
+                        if (l.type === "BRIDGE") {
                             if (l.src == this) {
                                 l.dest.highlight(true);
                                 l.dest.links.forEach(link => link.display(undefined, true));
@@ -488,6 +493,12 @@ export class Building3D extends Element3D {
                                 l.src.highlight(true);
                                 l.src.links.forEach(link => link.display(undefined, true));
 
+                            }
+                        } else if (l.type === "CODE_CLONE") {
+                            if (l.src == this) {
+                                l.dest.highlight(true);
+                            } else {
+                                l.src.highlight(true);
                             }
                         }
                         l.display(undefined, true);
@@ -545,11 +556,11 @@ export class Building3D extends Element3D {
         this.highlightLayer = new HighlightLayer("hl", this.scene);
 
         this.renderOutlineElement(scale);
-        
+
         if (this.elementModel.types.includes("VARIANT_FILE") && !this.elementModel.types.includes("CORE_FILE")) {
             this.mat = this.createVariantFileMaterial();
         }
-        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY") ||this.elementModel.types.includes("CROWN")) {
+        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("CROWN")) {
             this.mat = this.createDirectoryDefaultMaterial();
         } else {
             this.mat = this.createDefaultMaterial();

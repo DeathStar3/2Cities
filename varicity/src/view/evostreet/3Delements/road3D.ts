@@ -168,6 +168,11 @@ export class Road3D extends Element3D {
         let building: Building3D = undefined;
         if (this.vp && this.vp.getName() === name) return this.vp;
         const arrConcat = this.leftVariants.concat(this.rightVariants);
+        for (let b of this.crownBuildings) {
+            if (b.getName() == name) {
+                return b;
+            }
+        }
         for (let b of this.hatBuildings) {
             if (b.getName() == name) {
                 return b;
@@ -209,11 +214,15 @@ export class Road3D extends Element3D {
                             config.clones.map.set(b.name, {original: d3, clones: []});
                             if (d3 instanceof FileBuilding3D) {
                                 // files buildings are build here
-                                let hats = d3.buildFile();
+                                let specificBuildings = d3.buildFile();
+                                let hats = specificBuildings[0];
+                                let crown = specificBuildings[1];
                                 hats.forEach(building => {
                                     this.hatBuildings.push(building)
                                 });
-                                this.crownBuildings.push(d3.getCrownBuilding());
+                                if (crown !== undefined) {
+                                    this.crownBuildings.push(crown);
+                                }
                             } else {
                                 // Class buildings are build here
                                 d3.build();
@@ -224,10 +233,16 @@ export class Road3D extends Element3D {
                     } else {
                         let d3 = Building3DFactory.createBuildingMesh(b, 0, this.scene, config);
                         if (d3 instanceof FileBuilding3D) {
-                            let hats = d3.buildFile();
+                            let specificBuildings = d3.buildFile();
+                            console.log(specificBuildings);
+                            let hats = specificBuildings[0];
+                            let crown = specificBuildings[1];
                             hats.forEach(building => {
                                 this.hatBuildings.push(building)
                             });
+                            if (crown !== undefined) {
+                                this.crownBuildings.push(crown);
+                            }
                         } else {
                             d3.build();
                         }                        
@@ -361,12 +376,13 @@ export class Road3D extends Element3D {
         // if config -> district -> colors -> faces is defined
         if (config.district.colors.faces) {
             if (this.vp) {
-                if (this.vp.elementModel.name.startsWith("experiments")) {
-                    const folderRoadColor = config.district.colors.faces.filter(c => c.name === "FOLDER");
-                    if (folderRoadColor.length > 0) {
-                        mat.ambientColor = Color3.FromHexString(folderRoadColor[0].color);
-                        mat.diffuseColor = Color3.FromHexString(folderRoadColor[0].color);
-                        mat.emissiveColor = Color3.FromHexString(folderRoadColor[0].color);
+                if (this.vp.elementModel.types.includes("DIRECTORY")) {
+                    // const folderRoadColor = config.district.colors.faces.filter(c => c.name === "FOLDER");
+                    const folderColor = this.vp.getColor(config.fnf_base.colors.base, this.vp.elementModel.types)
+                    if (folderColor !== undefined) {
+                        mat.ambientColor = Color3.FromHexString(folderColor);
+                        mat.diffuseColor = Color3.FromHexString(folderColor);
+                        mat.emissiveColor = Color3.FromHexString(folderColor);
                         mat.specularColor = Color3.FromHexString("#000000");
                     } else {
                         const defaultVPColor = "#FFFFFF";
@@ -409,7 +425,9 @@ export class Road3D extends Element3D {
 
         this.d3Model.material = mat;
 
-        if (this.vp) this.vp.render();
+        if (this.vp) {
+            if (!this.vp.elementModel.types.includes("DIRECTORY")) this.vp.render();
+        } 
 
         const variants = this.leftVariants.concat(this.rightVariants);
         variants.forEach(d => {

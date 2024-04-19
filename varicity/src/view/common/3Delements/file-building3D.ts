@@ -1,10 +1,10 @@
-import {Building3D} from "./building3D";
-import {Mesh, MeshBuilder, Scene, Texture, Vector3} from "@babylonjs/core";
-import {Building} from "../../../model/entities/building.interface";
-import {Config} from "../../../model/entitiesImplems/config.model";
-import {Building3DFactory} from "../3Dfactory/building3D.factory";
-import {Link3D} from "../3Dinterfaces/link3D.interface";
-import {FileDislayEnum} from "../../../model/entities/config.interface";
+import { Building3D } from "./building3D";
+import { Mesh, MeshBuilder, Scene, Texture, Vector3 } from "@babylonjs/core";
+import { Building } from "../../../model/entities/building.interface";
+import { Config } from "../../../model/entitiesImplems/config.model";
+import { Building3DFactory } from "../3Dfactory/building3D.factory";
+import { Link3D } from "../3Dinterfaces/link3D.interface";
+import { FileDislayEnum } from "../../../model/entities/config.interface";
 
 /**
  * This class represent a file and the classes that it exports.
@@ -38,6 +38,7 @@ export class FileBuilding3D extends Building3D {
 	 * Determines how to place classes on top of file base cylinder
 	 */
 	private placeClasses() {
+		console.log(this.elementModel.exportedClasses)
 		const elements = this.elementModel.exportedClasses.map(model => Building3DFactory.createBuildingMesh(model as Building, 0, this.scene, this.config));
 		elements.sort((a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
 		for (let x = 0; x < this.max_x; x++) {
@@ -57,7 +58,7 @@ export class FileBuilding3D extends Building3D {
 		}
 	}
 
-	private placeCrown(){
+	private placeCrown() {
 		let crown = this.elementModel.cloneCrown;
 		let crownBuilding = Building3DFactory.createBuildingMesh(crown as Building, 0, this.scene, this.config);
 		this.crown = crownBuilding;
@@ -66,10 +67,12 @@ export class FileBuilding3D extends Building3D {
 	public getCrownBuilding() {
 		if (this.crown !== undefined) {
 			return this.crown;
+		} else {
+			return undefined;
 		}
 	}
 
-	public buildFile(): Building3D[] {
+	public buildFile(): [Building3D[], Building3D] {
 		const length = this.elementModel.exportedClasses.length;
 		let dim = Math.ceil(Math.sqrt(length));
 		this.max_x = this.max_z = dim;
@@ -78,7 +81,7 @@ export class FileBuilding3D extends Building3D {
 			this.placeCrown();
 		}
 
-		if (this.auto_scale && length > 0){ // Compute scaling for folder mesh
+		if (this.auto_scale && length > 0) { // Compute scaling for folder mesh
 			const diameter = (this.class_width * this.max_x) / Math.cos(Math.PI / 4);
 			this.scale = diameter / this.elementModel.getWidth(this.config.variables.width);
 		}
@@ -88,7 +91,7 @@ export class FileBuilding3D extends Building3D {
 				hatBuildings.push(building);
 			});
 		}
-		return hatBuildings
+		return [hatBuildings, this.crown]
 	}
 
 	place(x: number, z: number) {
@@ -107,7 +110,7 @@ export class FileBuilding3D extends Building3D {
 	 * @returns 
 	 */
 	protected renderBaseElement(
-		scale : number = 1,
+		scale: number = 1,
 		sideOrientation: number = Mesh.DEFAULTSIDE,
 		updatable: boolean = false
 	): Mesh {
@@ -187,7 +190,7 @@ export class FileBuilding3D extends Building3D {
 			this.crown.place(this.center.x, this.center.z);
 			this.crown.render(this.config, this.scale);
 			this.crown.d3Model.material.alpha = 0.1
-			this.crown.d3Model.translate(new Vector3(0, 1, 0),  this.crown.elementModel.metrics.getMetricValue("nbClones") / 4);
+			this.crown.d3Model.translate(new Vector3(0, 1, 0), this.crown.elementModel.metrics.getMetricValue("nbClones") / 4);
 		}
 
 
@@ -204,8 +207,8 @@ export class FileBuilding3D extends Building3D {
 		return this.center;
 	}
 
-	updateBuildingTexture(){
-		if(this.links.some(l=> l.type == "CORE_CONTENT")){
+	updateBuildingTexture() {
+		if (this.links.some(l => l.type == "CORE_CONTENT")) {
 			//
 			this.updateTextureCoreContent();
 		}
