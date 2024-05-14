@@ -1,6 +1,6 @@
-import {UIController} from '../../../controller/ui/ui.controller';
-import {Config, MetricSpec} from '../../../model/entitiesImplems/config.model';
-import {Element3D} from '../3Dinterfaces/element3D.interface';
+import { UIController } from '../../../controller/ui/ui.controller';
+import { Config, MetricSpec } from '../../../model/entitiesImplems/config.model';
+import { Element3D } from '../3Dinterfaces/element3D.interface';
 import {
     ActionManager,
     Color3,
@@ -14,12 +14,12 @@ import {
     Texture,
     Vector3
 } from '@babylonjs/core';
-import {Building} from '../../../model/entities/building.interface';
-import {Link3D} from '../3Dinterfaces/link3D.interface';
-import {MenuController} from "../../../controller/ui/menu/menu.controller";
-import {SceneRenderer} from "../../sceneRenderer";
-import {DetailsController} from "../../../controller/ui/menu/details.controller";
-import {SelectedBuildingController} from "../../../controller/ui/selected-building.controller";
+import { Building } from '../../../model/entities/building.interface';
+import { Link3D } from '../3Dinterfaces/link3D.interface';
+import { MenuController } from "../../../controller/ui/menu/menu.controller";
+import { SceneRenderer } from "../../sceneRenderer";
+import { DetailsController } from "../../../controller/ui/menu/details.controller";
+import { SelectedBuildingController } from "../../../controller/ui/selected-building.controller";
 
 export class Building3D extends Element3D {
     public static readonly TEXTURE_PATH: string = "./images/visualization-texture";
@@ -52,11 +52,15 @@ export class Building3D extends Element3D {
     highlightLayer: HighlightLayer;
     highlightForce: boolean;
 
+    focusScaleForce: boolean;
+
     config: Config;
 
     flag: boolean = false;
 
     protected mat: StandardMaterial;
+
+    private crownConstanteSize: number = 3;
 
     constructor(scene: Scene, buildingElement: Building, depth: number, config: Config) {
         super(scene);
@@ -81,7 +85,7 @@ export class Building3D extends Element3D {
     }
 
     getHeight(): number {
-        return this.elementModel.getHeight(this.config.variables.height) * this.heightScale;
+        return this.elementModel.types.includes("CROWN") ? this.elementModel.getHeight(this.config.variables.height) : this.elementModel.getHeight(this.config.variables.height) * this.heightScale;
     }
 
     getName() {
@@ -97,7 +101,7 @@ export class Building3D extends Element3D {
         if (!arg && !this.highlightForce) {
             this.highlightLayer.removeAllMeshes();
         } else {
-            this.highlightLayer.addMesh(this.d3Model, Color3.Blue());
+            this.highlightLayer.addMesh(this.d3Model, Color3.Purple());
         }
     }
 
@@ -122,7 +126,24 @@ export class Building3D extends Element3D {
 
         // Display the links.
         console.log("[Building ", element.name, "] Links: ", this.links)
-        this.links.forEach(l => l.display(flag, flag));
+        this.links.forEach(l => {
+            if (l.type === "BRIDGE") {
+                if (l.src == this) {
+                    l.dest.highlight(flag, true);
+                    l.dest.links.forEach(link => link.display(flag, flag));
+                } else {
+                    l.src.highlight(true);
+                    l.src.links.forEach(link => link.display(flag, flag));
+                }
+            } else if (l.type === "CODE_CLONE") {
+                if (l.src == this) {
+                    l.dest.highlight(flag, true);
+                } else {
+                    l.src.highlight(true);
+                }
+            }
+            l.display(flag, flag);
+        });
 
         if (openInfo) {
             // Display the submenu.
@@ -140,7 +161,7 @@ export class Building3D extends Element3D {
                 MenuController.changeImage(infoTab) // Set Information tab icon to selected
             }
             MenuController.selectedTab = infoTab;
-        }else {
+        } else {
             MenuController.closeMenu();
         }
 
@@ -153,7 +174,7 @@ export class Building3D extends Element3D {
     }
 
     place(x: number, z: number) {
-        const increaseHeight = ["API", "FACTORY", "DECORATOR", "TEMPLATE", "STRATEGY"];
+        const increaseHeight = ["API", "FACTORY", "DECORATOR", "TEMPLATE", "STRATEGY", "CROWN"];
         let halfHeight = this.getHeight() / 2;
         this.center = new Vector3(x, halfHeight + this.depth * 30, z);
         this.bot = this.center.add(new Vector3(0, -halfHeight, 0));
@@ -173,8 +194,21 @@ export class Building3D extends Element3D {
         scale: number = 1,
         sideOrientation: number = Mesh.DEFAULTSIDE,
         updatable: boolean = false
-        ): Mesh {
-        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
+    ): Mesh {
+        if (this.elementModel.types.includes("CROWN")) {
+            return MeshBuilder.CreateCylinder(
+                this.elementModel.name,
+                {
+                    // height: this.crownConstanteSize + this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
+                    // height: this.getHeight() + (this.elementModel.metrics.getMetricValue("nbClones") / 2),
+                    height: this.elementModel.metrics.getMetricValue("nbClones") / 2,
+                    diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
+                    sideOrientation: sideOrientation,
+                    updatable: updatable
+                },
+                this.scene);
+        }
+        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
                 {
@@ -227,7 +261,7 @@ export class Building3D extends Element3D {
     private createDefaultMaterial() {
         let mat = new StandardMaterial(this.elementModel.name + "Mat", this.scene);
 
-        if (this.config.force_color) {
+        if (!this.elementModel.types.includes("BRIDGED")) {
             mat.ambientColor = Color3.FromHexString(this.config.force_color);
             mat.diffuseColor = Color3.FromHexString(this.config.force_color);
             mat.emissiveColor = Color3.FromHexString(this.config.force_color);
@@ -275,6 +309,38 @@ export class Building3D extends Element3D {
             mat.specularColor = new Color3(0, 0, 0);
         }
         return mat;
+    }
+
+    private createVariantFileMaterial() {
+        let mat = new StandardMaterial(this.elementModel.name + "Mat", this.scene);
+
+        if (this.elementModel.variantFileColor !== undefined) {
+            let baseColor = this.elementModel.variantFileColor;
+            mat.ambientColor = Color3.FromHexString(baseColor);
+            mat.diffuseColor = Color3.FromHexString(baseColor);
+            mat.emissiveColor = Color3.FromHexString(baseColor);
+            mat.specularColor = Color3.FromHexString("#000000");
+        }
+        else if (this.config.fnf_base.colors.base) {
+            const baseColor = this.getColor(this.config.fnf_base.colors.base, this.elementModel.types)
+            if (baseColor !== undefined) {
+                mat.ambientColor = Color3.FromHexString(baseColor);
+                mat.diffuseColor = Color3.FromHexString(baseColor);
+                mat.emissiveColor = Color3.FromHexString(baseColor);
+                mat.specularColor = Color3.FromHexString("#000000");
+            } else {
+                mat.ambientColor = new Color3(0, 1, 0);
+                mat.diffuseColor = new Color3(0, 1, 0);
+                mat.emissiveColor = new Color3(0, 1, 0);
+                mat.specularColor = new Color3(0, 0, 0);
+            }
+        } else {
+            mat.ambientColor = new Color3(1, 0, 0);
+            mat.diffuseColor = new Color3(1, 0, 0);
+            mat.emissiveColor = new Color3(1, 0, 0);
+            mat.specularColor = new Color3(0, 0, 0);
+        }
+        return mat
     }
 
     private displayMetricByCityFade(mat: StandardMaterial) {
@@ -376,18 +442,11 @@ export class Building3D extends Element3D {
                 this.applyCrackTextureForLevel(level, isWhiteColor, mat);
             } else {
                 mat.diffuseTexture = new Texture("./images/visualization-texture/crack/" + color + "cross_3.png", this.scene);
-                if(isWhiteColor){
+                if (isWhiteColor) {
                     mat.emissiveTexture = new Texture("./images/visualization-texture/crack/" + color + "cross_3_black.png", this.scene);
                 }
             }
         }
-    }
-
-    displayExportedClass() {
-        this.mat.emissiveTexture = new Texture(
-			`${Building3D.TEXTURE_PATH}/exported_class.svg`,
-			this.scene
-		);
     }
 
     protected renderEdges() {
@@ -414,8 +473,30 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOverTrigger
                 },
                 () => {
+                    // if (this.elementModel.types.includes("CROWN")) {
+                    //     this.focusScale(true); 
+                    // }
                     this.highlight(true);
-                    this.links.forEach(l => l.display(undefined, true));
+                    this.links.forEach(l => {
+                        if (l.type === "BRIDGE") {
+                            if (l.src == this) {
+                                l.dest.highlight(true);
+                                l.dest.links.forEach(link => link.display(undefined, true));
+                            } else {
+                                l.src.highlight(true);
+                                l.src.links.forEach(link => link.display(undefined, true));
+
+                            }
+                        } else if (l.type === "CODE_CLONE") {
+                            if (l.src == this) {
+                                l.dest.highlight(true);
+                            } else {
+                                l.src.highlight(true);
+                            }
+                        }
+                        l.display(undefined, true);
+
+                    });
                     if (SelectedBuildingController.selected.length == 0) {
                         UIController.displayObjectInfo(this);
                     }
@@ -428,8 +509,22 @@ export class Building3D extends Element3D {
                     trigger: ActionManager.OnPointerOutTrigger
                 },
                 () => {
+                    // if (this.elementModel.types.includes("CROWN") && this.d3Model.scaling.y !== 1) {
+                    //     this.focusScale(false);
+                    // }
                     this.highlight(false);
-                    this.links.forEach(l => l.display(undefined, false));
+                    this.links.forEach(l => {
+                        if (l.type === "BRIDGE" || l.type === "CODE_CLONE") {
+                            if (l.src == this) {
+                                l.dest.highlight(false);
+                                l.dest.links.forEach(link => link.display(undefined, false));
+                            } else {
+                                l.src.highlight(false);
+                                l.src.links.forEach(link => link.display(undefined, false));
+                            }
+                        }
+                        l.display(undefined, false);
+                    });
                 }
             )
         );
@@ -454,8 +549,11 @@ export class Building3D extends Element3D {
         this.highlightLayer = new HighlightLayer("hl", this.scene);
 
         this.renderOutlineElement(scale);
-        
-        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) {
+
+        if (this.elementModel.types.includes("VARIANT_FILE") && !this.elementModel.types.includes("CORE_FILE")) {
+            this.mat = this.createVariantFileMaterial();
+        }
+        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("CROWN")) {
             this.mat = this.createDirectoryDefaultMaterial();
         } else {
             this.mat = this.createDefaultMaterial();
@@ -589,7 +687,7 @@ export class Building3D extends Element3D {
         }
 
         // Default edge coloring
-        this.renderEdges();
+        // this.renderEdges();
 
         if (this.config.building.colors.edges) {
             const edgesColor = this.getColor(this.config.building.colors.edges, this.elementModel.types);
@@ -601,6 +699,16 @@ export class Building3D extends Element3D {
             }
 
             this.setupActionManager();
+        }
+
+        if (this.config.fnf_base.colors.edges) {
+            const edgesColor = this.getColor(this.config.fnf_base.colors.edges, this.elementModel.types)
+            if (edgesColor !== undefined) {
+                this.d3Model.enableEdgesRendering();
+                const c = Color3.FromHexString(edgesColor);
+                this.d3Model.edgesColor = new Color4(c.r, c.g, c.b, 1);
+            }
+
         }
     }
 

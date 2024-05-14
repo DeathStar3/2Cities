@@ -11,6 +11,9 @@ export class ClassImplem extends Building {
     }
 
     public getHeight(field: string): number {
+        if (this.metrics === undefined) {
+            console.log(this)
+        }
         return 0.5 + this.metrics.getMetricValue(field) * 0.5;
     }
 

@@ -19,6 +19,12 @@ export abstract class Building implements Node {
 
     exportedClasses: Node[];
 
+    cloneCrown?: Node;
+
+    variantFileColor?: string;
+
+    maxClone?: number;
+
     constructor() {
         this.types = [];
     }
@@ -26,6 +32,4 @@ export abstract class Building implements Node {
     abstract getHeight(field: string): number;
 
     abstract getWidth(field: string): number;
-
-
 }

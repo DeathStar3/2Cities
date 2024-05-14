@@ -36,8 +36,8 @@ export default class DecoratorFactoryTemplateVisitor extends SymfinderVisitor{
      */
     async visit(node: ClassDeclaration): Promise<void> {
 
-        if (!isClassDeclaration(node) || node.kind === undefined) return;
-
+        if (!isClassDeclaration(node) || node.kind === undefined || node.name === undefined) return;
+        
         var className = node.name!.text;
         var graphNode = await this.neoGraph.getNode(className);
         if (graphNode !== undefined){

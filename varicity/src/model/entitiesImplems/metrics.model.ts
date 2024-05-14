@@ -16,6 +16,12 @@ export class Metrics {
         return this.metrics.has(metricName);
     }
 
+    increaseMetricValue(metricName: string, value: number) {
+        if (this.hasMetric(metricName)) {
+            this.metrics.get(metricName).value += 1;
+        }
+    }
+
     getMetricValue(metricName: string): number {
         if (!this.hasMetric(metricName)) {
             return 0;

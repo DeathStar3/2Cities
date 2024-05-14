@@ -18,7 +18,7 @@ export class City3D {
 
     highway: Road3D;
 
-    file_road: Road3D;
+    file_road: Road3D;;
 
     links: Link[] = [];
 
@@ -46,6 +46,10 @@ export class City3D {
         return this.file_road.get(name)
     }
 
+    private findInCrown(name: string): Building3D {
+        return this.file_road.getCrown(name);
+    }
+
     private LinkInClassCity(link: Link) {
         let srcBuilding = this.findInClass(link.source.name);
         let targetBuilding = this.findInClass(link.target.name);
@@ -61,7 +65,21 @@ export class City3D {
         if (srcBuilding !== undefined && targetBuilding !== undefined) {
             let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
             this.registerLink(l, srcBuilding, targetBuilding);
-        }       
+            if (link.type === "EXPORT") {
+                this.bridgeCities(srcBuilding);
+                this.bridgeCities(targetBuilding);
+            }
+        }
+
+    }
+
+    private linkCrown(link: Link) {
+        let srcBuilding = this.findInClone(link.source.name);
+        let targetBuilding = this.findInClone(link.target.name);
+        if (srcBuilding !== undefined && targetBuilding !== undefined) {
+            let l = Link3DFactory.createLink(srcBuilding, targetBuilding, link.type, link.percentage, this.scene, this.config);
+            this.registerLink(l, srcBuilding, targetBuilding);
+        }
     }
 
     private registerLink(link: Link3D, src: Building3D, dest: Building3D) {
@@ -71,20 +89,37 @@ export class City3D {
         }
     }
 
+    private bridgeCities(srcBuilding: Building3D) {
+        let classBuilding = this.findInClass(srcBuilding.getName());
+        if (classBuilding !== undefined) {
+            let bridge = Link3DFactory.createLink(srcBuilding, classBuilding, "BRIDGE", undefined, this.scene, this.config);
+            this.registerLink(bridge, srcBuilding, classBuilding);
+            srcBuilding.elementModel.types.push("BRIDGED")
+        }
+    }
+
     build() {
         this.config.clones = {
             map: new Map<string, {
                 original: Building3D,
                 clones: Building3D[]
-            }>()
+            }>(), 
         };
+
+        // this.file_road.registerClonedBuilding(this.config, this.links);
 
         this.road.build(this.config);
         this.highway.build(this.config);
         this.file_road.build(this.config);
         this.links.forEach(l => {
-            this.LinkInClassCity(l);
-            this.LinkInCloneCity(l);
+            if (l.type === "CODE_CLONE") {
+                this.linkCrown(l);
+            } else {
+                this.LinkInClassCity(l);
+                this.LinkInCloneCity(l);
+            }
+            // this.LinkInClassCity(l);
+            // this.LinkInCloneCity(l);
         });
 
         for (let [, value] of this.config.clones.map) {

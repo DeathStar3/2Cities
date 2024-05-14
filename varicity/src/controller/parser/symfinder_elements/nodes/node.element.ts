@@ -8,6 +8,9 @@ export interface Node {
     types: string[];
     metrics: Metrics;
     exportedClasses: Node[];
+    cloneCrown?: Node;
+    variantFileColor?: string;
+    maxClone?: number;
 }
 
 export class NodeElement implements Node {
@@ -20,6 +23,9 @@ export class NodeElement implements Node {
     compositionLevel: number = -1;
     origin: string = "";
     exportedClasses: Node[];
+    cloneCrown?: NodeElement;
+    variantFileColor?: string;
+    maxClone?: number;
 
     constructor(name: string) {
         this.name = name;
@@ -51,5 +57,6 @@ export enum VariabilityMetricsName {
     NB_FUNCTIONS = "nbFunctions",
     NB_ATTRIBUTES = "nbAttributes",
     NB_CONSTRUCTOR_VARIANTS = "nbConstructorVariants",
-    NB_VARIANTS = "nbVariants"
+    NB_VARIANTS = "nbVariants",
+    NB_CLONES = "nbClones"
 }

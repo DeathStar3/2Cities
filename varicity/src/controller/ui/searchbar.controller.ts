@@ -1,4 +1,4 @@
-import {Node} from '../parser/symfinder_elements/nodes/node.element';
+import {Node, NodeElement} from '../parser/symfinder_elements/nodes/node.element';
 import {Building3D} from '../../view/common/3Delements/building3D';
 import {Metrics} from "../../model/entitiesImplems/metrics.model";
 import {NodeInterface} from "../../model/entities/jsonInput.interface";

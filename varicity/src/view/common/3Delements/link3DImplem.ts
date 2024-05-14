@@ -34,17 +34,19 @@ export class Link3DImplem implements Link3D {
             delete this.mesh;
             return;
         }
-        this.curve = Curve3.CreateQuadraticBezier(this.src.top, this.src.top.add(new Vector3(0, (this.src.top.y + this.dest.top.y) / 2, 0)), this.dest.top, 25);
+
+        this.curve = Curve3.CreateQuadraticBezier(this.src.top, this.src.top.add(new Vector3(0, (this.src.top.y + this.dest.top.y) * 5, 0)), this.dest.top, 25);
 
         let colors: Color4[] = [];
         let start = Color4.FromColor3(Color3.Red()); // default value
-        let end = Color4.FromColor3(Color3.Black()); // darkens with distance
+        let end = Color4.FromColor3(Color3.Teal()); // darkens with distance
 
         if (this.config.link.colors) {
             for (let c of this.config.link.colors) {
                 let done = false;
                 if (c.name == this.type) {
-                    start = Color4.FromColor3(Color3.FromHexString(c.color));
+                    // start = Color4.FromColor3(Color3.FromHexString(c.color));
+                    start = Color4.FromColor3(Color3.Blue());
                     done = true;
                 }
                 if (done) break;

@@ -14,6 +14,10 @@ export class Building3DFactory {
 		return element.types.includes("DIRECTORY");
 	}
 
+	private static isCrown(element: Building): boolean {
+		return element.types.includes("CROWN");
+	}
+
 	public static createBuildingMesh(
 		element: Building,
 		depth: number,
@@ -22,7 +26,10 @@ export class Building3DFactory {
 	): Building3D {
 		if (!element || element.types === undefined) throw new Error("No element to work with");
 
-		if (Building3DFactory.isDirectory(element)) {
+		if (Building3DFactory.isCrown(element)) {
+			return new Building3D(scene, element, depth, config)
+		}
+		else if (Building3DFactory.isDirectory(element)) {
 			return new Building3D(scene, element, depth, config);
 		}
 		else if (Building3DFactory.isFile(element)) {

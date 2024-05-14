@@ -49,19 +49,25 @@ fnf_base:
     file_size: "adaptative"
   colors:
     base:
+      - name: "CROWN"
+        color: "#f535e1"
       - name: "VP_FOLDER"
-        color: "#ff5733"
+        color: "#3b107e"
       - name: "VARIANT_FOLDER"
-        color: "#5ee7c0"
+        color: "#5e2bb1"
       - name: "DIRECTORY"
-        color: "#2d5b08"
+        color: "#555555"
       - name: "CORE_FILE"
         color: "#860d3f"
       - name: "VARIANT_FILE"
         color: "#df5ee7"
       - name: "FILE"
         color: "#555555"
-      
+    edges:
+      - name: "CROWN"
+        color: "#f535e1"
+        
+force_color: "#555555"   
 
 district:
   padding: 0
@@ -80,18 +86,21 @@ link:
       color: "#ef2222"
     - name: "EXTENDS"
       color: "#3f97ff"
-    - name: "DUPLICATES"
+    - name: "CODE_CLONE"
       color: "#2B914A"
+    - name: "BRIDGE"
+      color: "#ff9700"
     - name: "USAGE"
       color: "#1A8039"
   display:
     air_traffic:
       - "IMPLEMENTS"
       - "EXTENDS"
-      - "CORE_CONTENT"
-      - "CODE_DUPLICATED"
+      - "CODE_CLONE"
+      - "BRIDGE"
     bridges:
-      - "EXPORT"
+      - "CODE_CLONE"
+      - "BRIDGE"
     underground_road:
       - "USAGE"
 #      - "CHILD"

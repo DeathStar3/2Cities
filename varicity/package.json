@@ -51,9 +51,12 @@
     "@types/webpack-env": "^1.15.3",
     "axios": "^0.24.0",
     "fs": "0.0.1-security",
+    "golden-number": "^1.0.1",
+    "hex-to-hsl": "^1.0.2",
     "js-cookie": "^3.0.1",
     "snackbar": "^1.1.0",
     "sortablejs": "^1.14.0",
-    "websocket": "^1.0.34"
+    "websocket": "^1.0.34",
+    "hsl-to-hex": "1.0.0"
   }
 }

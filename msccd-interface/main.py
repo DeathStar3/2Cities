@@ -6,6 +6,7 @@ from typing import List, Tuple, Dict
 
 from neo4j_connector import Neo4jConnection
 from prepare_data import extract_file_list, export_clone_data, write_file
+from token_bag_parser import extract_bags_data
 
 # URI examples: "neo4j://localhost", "neo4j+s://xxx.databases.neo4j.io"
 URI = "bolt://localhost:7687"
@@ -27,10 +28,20 @@ class ExperimentResult:
 
 def is_core_files(src_path: str, clone_path: str, neo4j_runner: Neo4jConnection) -> bool:
     src_node = neo4j_runner.get_node(src_path)
-    src_labels = src_node[0][0].labels
+    try:
+        src_labels = src_node[0][0].labels
+    except Exception as e:
+        print("file not find in db, labeled as not core")
+        print(f"Error returned: {e}")
+        return False
     if "CORE_FILE" in src_labels:
         clone_node = neo4j_runner.get_node(clone_path)
-        clone_labels = clone_node[0][0].labels
+        try:
+            clone_labels = clone_node[0][0].labels
+        except Exception as e:
+            print("file not find in db, labeled as not core")
+            print(f"Error returned: {e}")
+            return False
         return "CORE_FILE" in clone_labels 
     else:
         return False
@@ -39,9 +50,9 @@ def link_nodes(src_path: str, clones: List[Tuple], neo4j_runner: Neo4jConnection
     for clone in clones:
         if is_core_files(src_path, clone[1], neo4j_runner):
             neo4j_runner.link_core(src_path, clone[1])
+            neo4j_runner.link_clones(src_path, clone[1], clone[2], clone[3], clone[4])
         else:
-            neo4j_runner.link_clones(src_path, clone[1])
-            neo4j_runner.link_clones(clone[1], src_path)
+            neo4j_runner.link_clones(src_path, clone[1], clone[2], clone[3], clone[4])
 
 def detect_code_clones(duplication_data: Dict , neo4j_runner: Neo4jConnection) -> None:
     
@@ -78,6 +89,7 @@ if __name__ == '__main__':
 
     clone_pairs_file = f"./msccd-interface/analysis_shared_files/tasks/task{task_id}/detection{detection_id}/pairs.file"
     file_list_file = f"./msccd-interface/analysis_shared_files/tasks/task{task_id}/fileList.txt"
+    token_bags_list = f"./msccd-interface/analysis_shared_files//tasks/task{task_id}/tokenBags"
 
     dups_outfile = f"./msccd-interface/analysis_shared_files/duplications_data/{project_name}.json"
     db_outfile = f"./js/app/export/{project_name}.json"
@@ -85,7 +97,8 @@ if __name__ == '__main__':
     try:
         print("Preparing duplication data...")
         file_list: List = extract_file_list(file_list_file)
-        duplication_data: Dict = export_clone_data(clone_pairs_file, file_list, project_name)
+        bags_data: Dict = extract_bags_data(token_bags_list)
+        duplication_data: Dict = export_clone_data(clone_pairs_file, file_list, project_name, bags_data)
     except Exception as e:
         print(f"something went wrong while preparing data, error: {e}")
     else:
