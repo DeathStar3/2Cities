@@ -1,12 +1,17 @@
 import {Config} from '../../../model/entitiesImplems/config.model';
-import {ActionManager, Color3, ExecuteCodeAction, MeshBuilder, Scene, StandardMaterial, Vector3} from '@babylonjs/core';
+import {ActionManager, Color3, ExecuteCodeAction, MeshBuilder, Scene, StandardMaterial, Vector3, HighlightLayer} from '@babylonjs/core';
 import {Element3D} from '../../common/3Dinterfaces/element3D.interface';
+import { Building } from '../../../model/entities/building.interface';
 import {Building3D} from '../../common/3Delements/building3D';
 import {VPVariantsImplem} from "../../../model/entitiesImplems/vpVariantsImplem.model";
 import { Building3DFactory } from "../../common/3Dfactory/building3D.factory";
 import { FileBuilding3D } from '../../common/3Delements/file-building3D';
-import { Link } from '../../../model/entities/link.interface';
-import { ClassImplem } from '../../../model/entitiesImplems/classImplem.model';
+import { SelectedBuildingController } from "../../../controller/ui/selected-building.controller";
+import { MenuController } from "../../../controller/ui/menu/menu.controller";
+import { DetailsController } from "../../../controller/ui/menu/details.controller";
+import { UIController } from '../../../controller/ui/ui.controller';
+
+
 
 export class Road3D extends Element3D {
     padding: number = 0;
@@ -44,6 +49,10 @@ export class Road3D extends Element3D {
     forcedLength: number = undefined;
 
     status: boolean = false;
+
+    highlightForce: boolean
+    highlightLayer: HighlightLayer;
+    flag: boolean = false;
 
     constructor(scene: Scene, vpElmt: VPVariantsImplem, config: Config, name: string = "") {
         super(scene);
@@ -301,7 +310,7 @@ export class Road3D extends Element3D {
         this.orientationZ = orientationZ;
 
         if (this.vp) this.vp.place(x, z);
-
+        
         this.vector = new Vector3(
             x + orientationX * (this.getRoadLength() / 2 + this.getVpWidth() / 2 - this.getVpPadding() / 2),
             0,
@@ -310,23 +319,47 @@ export class Road3D extends Element3D {
 
         let offsetVL = this.getVpWidth() / 2; // to start drawing VPs
         let offsetVR = this.getVpWidth() / 2;
+        let vX = 0;
+        let vZ = 0;
         this.leftVPs.forEach(e => {
-            let vX =
+            if (e.vp.elementModel.types.includes("DIRECTORY")) {
+                vX =
                 /* horizontal case: */ (e.getSideWidth(false) + offsetVL) * orientationX +
-                /* vertical case:   */ (e.getVpWidth() / 2 - e.vp.padding / 2 + this.roadWidth / 2) * -orientationZ;
-            let vZ =
-                /* horizontal case: */ (e.getVpWidth() / 2 - e.vp.padding / 2 + this.roadWidth / 2) * orientationX +
+                /* vertical case:   */ (e.getVpWidth() / 2 - (e.vp.padding * 3)  + this.roadWidth / 2) * -orientationZ;
+                vZ =
+                /* horizontal case: */ (e.getVpWidth() / 2 - (e.vp.padding * 3)  + this.roadWidth / 2) * orientationX +
                 /* vertical case:   */ (e.getSideWidth(false) + offsetVL) * orientationZ;
+            } else {
+                vX =
+                /* horizontal case: */ (e.getSideWidth(false) + offsetVL) * orientationX +
+                /* vertical case:   */ (e.getVpWidth() / 2 - e.vp.padding / 2  + this.roadWidth / 2) * -orientationZ;
+                vZ =
+                /* horizontal case: */ (e.getVpWidth() / 2 - e.vp.padding / 2  + this.roadWidth / 2) * orientationX +
+                /* vertical case:   */ (e.getSideWidth(false) + offsetVL) * orientationZ;
+            }
+
+
+
             e.place(vX + x, vZ + z, -orientationZ, orientationX);
             offsetVL += e.getWidth() + 0.2;
         });
         this.rightVPs.forEach(e => {
-            let vX =
+            if (e.vp.elementModel.types.includes("DIRECTORY")) {
+                vX =
+                /* horizontal case: */ (e.getSideWidth(true) + offsetVR) * orientationX +
+                /* vertical case:   */ (e.getVpWidth() / 2 - (e.vp.padding * 3)+ this.roadWidth / 2) * orientationZ;
+                vZ =
+                    /* horizontal case: */ -(e.getVpWidth() / 2 - (e.vp.padding * 3)+ this.roadWidth / 2) * orientationX +
+                    /* vertical case:   */ (e.getSideWidth(true) + offsetVR) * orientationZ;
+            } else {
+                vX =
                 /* horizontal case: */ (e.getSideWidth(true) + offsetVR) * orientationX +
                 /* vertical case:   */ (e.getVpWidth() / 2 - e.vp.padding / 2 + this.roadWidth / 2) * orientationZ;
-            let vZ =
-                /* horizontal case: */ -(e.getVpWidth() / 2 - e.vp.padding / 2 + this.roadWidth / 2) * orientationX +
-                /* vertical case:   */ (e.getSideWidth(true) + offsetVR) * orientationZ;
+                vZ =
+                    /* horizontal case: */ -(e.getVpWidth() / 2 - e.vp.padding / 2 + this.roadWidth / 2) * orientationX +
+                    /* vertical case:   */ (e.getSideWidth(true) + offsetVR) * orientationZ;
+
+            }
             e.place(vX + x, vZ + z, orientationZ, -orientationX);
             offsetVR += e.getWidth() + 0.2;
         });
@@ -424,9 +457,50 @@ export class Road3D extends Element3D {
         }
 
         this.d3Model.material = mat;
+        this.d3Model.actionManager = new ActionManager(this.scene);
+
 
         if (this.vp) {
-            if (!this.vp.elementModel.types.includes("DIRECTORY")) this.vp.render();
+            if (!this.vp.elementModel.types.includes("DIRECTORY")) {
+                this.vp.render();
+            } 
+            // here action manager for road, but break movement
+            // else {
+            //     this.d3Model.actionManager.registerAction(
+            //         new ExecuteCodeAction(
+            //             {
+            //                 trigger: ActionManager.OnPointerOverTrigger
+            //             },
+            //             () => {
+            //                 this.highlight(true);
+            //                 if (SelectedBuildingController.selected.length == 0) {
+            //                     UIController.displayObjectInfo(this.vp);
+            //                 }
+            //             }
+            //         )
+            //     );
+            //     this.d3Model.actionManager.registerAction(
+            //         new ExecuteCodeAction(
+            //             {
+            //                 trigger: ActionManager.OnPointerOutTrigger
+            //             },
+            //             () => {
+            //                 this.highlight(false);
+            //             }
+            //         )
+            //     );
+            //     this.d3Model.actionManager.registerAction(
+            //         new ExecuteCodeAction(
+            //             {
+            //                 trigger: ActionManager.OnPickTrigger
+            //             },
+            //             () => {
+            //                 this.flag = !this.flag;
+            //                 this.selectAndDisplayDetails(this.flag, this.flag);
+            //             }
+            //         )
+            //     );
+            // }
         } 
 
         const variants = this.leftVariants.concat(this.rightVariants);
@@ -439,7 +513,6 @@ export class Road3D extends Element3D {
             b.render(config);
         });
 
-        this.d3Model.actionManager = new ActionManager(this.scene);
         this.d3Model.actionManager.registerAction(
             new ExecuteCodeAction(
                 {
@@ -450,6 +523,7 @@ export class Road3D extends Element3D {
                 }
             )
         );
+        
     }
 
     showAllLinks(status?: boolean) {
@@ -467,4 +541,86 @@ export class Road3D extends Element3D {
             vp.showAllLinks(this.status);
         });
     }
+
+    highlight(arg: boolean, force: boolean = false) {
+        if (force) this.highlightForce = arg;
+        if (!arg && !this.highlightForce) {
+            this.highlightLayer.removeAllMeshes();
+        } else {
+            this.highlightLayer.addMesh(this.d3Model, Color3.Purple());
+        }
+    }
+
+    protected selectAndDisplayDetails(flag, openInfo: boolean = true, element: Building = this.vp.elementModel) {
+        if (flag) {
+            SelectedBuildingController.selectABuilding(element);
+        } else {
+            SelectedBuildingController.unselectABuilding(element);
+        }
+
+        // Highlight the building.
+        this.highlight(flag, true);
+
+        if (openInfo) {
+            // Display the submenu.
+            document.getElementById("submenu").style.display = "block";
+
+            // Deselect the current tab.
+            const infoTab = DetailsController.getInformationTab();
+            if (MenuController.selectedTab && MenuController.selectedTab !== infoTab) {
+                const currentTab = document.getElementById(MenuController.selectedTab.id)
+                MenuController.changeImage(currentTab) // Remove tab icon except if Information tab
+            }
+
+            // Select the information tab.
+            if (!MenuController.selectedTab || MenuController.selectedTab !== infoTab) {
+                MenuController.changeImage(infoTab) // Set Information tab icon to selected
+            }
+            MenuController.selectedTab = infoTab;
+        } else {
+            MenuController.closeMenu();
+        }
+
+        // Update the object information.
+        UIController.displayObjectInfo(this.vp, flag ? flag : undefined);
+    }
+
+    // protected setupActionManager() {
+    //     this.d3Model.actionManager = new ActionManager(this.scene);
+
+    //     this.d3Model.actionManager.registerAction(
+    //         new ExecuteCodeAction(
+    //             {
+    //                 trigger: ActionManager.OnPointerOverTrigger
+    //             },
+    //             () => {
+    //                 this.highlight(true);
+    //                 if (SelectedBuildingController.selected.length == 0) {
+    //                     UIController.displayObjectInfo(this.vp);
+    //                 }
+    //             }
+    //         )
+    //     );
+    //     this.d3Model.actionManager.registerAction(
+    //         new ExecuteCodeAction(
+    //             {
+    //                 trigger: ActionManager.OnPointerOutTrigger
+    //             },
+    //             () => {
+    //                 this.highlight(false);
+    //             }
+    //         )
+    //     );
+    //     this.d3Model.actionManager.registerAction(
+    //         new ExecuteCodeAction(
+    //             {
+    //                 trigger: ActionManager.OnPickTrigger
+    //             },
+    //             () => {
+    //                 this.flag = !this.flag;
+    //                 this.selectAndDisplayDetails(this.flag, this.flag);
+    //             }
+    //         )
+    //     )
+    // }
 }

@@ -39,11 +39,13 @@ export default class ExportVisitor extends SymfinderVisitor {
         if (checker.getSymbolAtLocation(node) === undefined) return; // Can happen if the file is empty or its content is only comments
 
         const exports = checker.getExportsOfModule(checker.getSymbolAtLocation(node)!);
+        console.log(exports)
         const exportOriginals = []; //No alias, types and export star
         for (let symbol of exports) {
-
+            console.log(symbol)
             if (symbol.flags == SymbolFlags.Alias) {
                 const originalSymbol = this.getOriginalSymbol(symbol, checker);
+                console.log(originalSymbol)
                 if (originalSymbol !== undefined && originalSymbol.escapedName !== "unknown")
                     symbol = originalSymbol;
                 else {
@@ -67,8 +69,10 @@ export default class ExportVisitor extends SymfinderVisitor {
         this.incrementUnknownSource(exportOriginals.length - exportCorrects.length);
         if (exportCorrects.length === 0)
             return;
+        console.log(exportCorrects)
 
         for (const exportExternal of exportCorrects) {
+            console.log(exportExternal)
             if (exportExternal.declarations === undefined) {
                 console.log("Declarations undefined, ignore");
                 this.incrementUnknownSource();

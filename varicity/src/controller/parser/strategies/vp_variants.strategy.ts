@@ -65,12 +65,13 @@ export class VPVariantsStrategy implements ParsingStrategy {
             fileList.forEach(n => {
                 n.addMetric(VariabilityMetricsName.NB_VARIANTS, this.getLinkedNodesFromSource(n, fileList, fileLinks).length);
             })
+            let total_exported: number = 0
             fileList.forEach(file => {
                 file.exportedClasses = fileClassLinks
                     .filter(link => link.source === file.name)
                     .map(link => this.findNodeByName(link.target, nodesList))
+                total_exported += file.exportedClasses.length;
             });
-
             let variantFilesColors: Map<string, { color: string }> = new Map<string, { color: string }>();
             let seedColor = config.fnf_base.colors.base.filter(c => c.name === "VARIANT_FILE")[0].color;
             let seedRgb = this.hex2rgb(seedColor);
@@ -118,7 +119,7 @@ export class VPVariantsStrategy implements ParsingStrategy {
                     maxClone = linkMax
                 }
             });
-
+            console.log(cloneNodes.length)
             cloneNodes.forEach(node => {
                 node.cloneCrown.maxClone = maxClone;
             })

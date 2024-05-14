@@ -38,21 +38,21 @@ export class FileBuilding3D extends Building3D {
 	 * Determines how to place classes on top of file base cylinder
 	 */
 	private placeClasses() {
-		console.log(this.elementModel.exportedClasses)
 		const elements = this.elementModel.exportedClasses.map(model => Building3DFactory.createBuildingMesh(model as Building, 0, this.scene, this.config));
-		elements.sort((a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
+		let filteredElements = elements.filter(b => b.getName());
+		filteredElements.sort((a: Building3D, b: Building3D) => a.getName().localeCompare(b.getName())); // Sort the class building by name
 		for (let x = 0; x < this.max_x; x++) {
 			this.hat_city.push([])
 			for (let z = 0; z < this.max_z; z++) {
-				if (elements.length === 0) {
+				if (filteredElements.length === 0) {
 					break;
 				}
-				const elem = elements.pop();
+				const elem = filteredElements.pop();
 				elem.padding = 0.2
 				this.hat_city[x].push(elem);
 				this.class_width = Math.max(this.class_width, elem.getWidth()); // Minus 0.4 to remove some padding
 			}
-			if (elements.length === 0) {
+			if (filteredElements.length === 0) {
 				break;
 			}
 		}
@@ -177,7 +177,6 @@ export class FileBuilding3D extends Building3D {
 						building.center.add(new Vector3(0, this.getHeight(), 0))
 					)
 					building.render(this.config, scale);
-					building.displayExportedClass()
 					building.d3Model.translate(new Vector3(0, 1, 0), this.getHeight());
 				}
 				z += offset_z;
