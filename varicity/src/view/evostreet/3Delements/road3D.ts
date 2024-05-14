@@ -325,9 +325,9 @@ export class Road3D extends Element3D {
             if (e.vp.elementModel.types.includes("DIRECTORY")) {
                 vX =
                 /* horizontal case: */ (e.getSideWidth(false) + offsetVL) * orientationX +
-                /* vertical case:   */ (e.getVpWidth() / 2 - (e.vp.padding * 3)  + this.roadWidth / 2) * -orientationZ;
+                /* vertical case:   */ (e.getVpWidth() / 2 - (e.vp.padding * 1.5)  + this.roadWidth / 2) * -orientationZ;
                 vZ =
-                /* horizontal case: */ (e.getVpWidth() / 2 - (e.vp.padding * 3)  + this.roadWidth / 2) * orientationX +
+                /* horizontal case: */ (e.getVpWidth() / 2 - (e.vp.padding * 1.5)  + this.roadWidth / 2) * orientationX +
                 /* vertical case:   */ (e.getSideWidth(false) + offsetVL) * orientationZ;
             } else {
                 vX =
@@ -347,9 +347,9 @@ export class Road3D extends Element3D {
             if (e.vp.elementModel.types.includes("DIRECTORY")) {
                 vX =
                 /* horizontal case: */ (e.getSideWidth(true) + offsetVR) * orientationX +
-                /* vertical case:   */ (e.getVpWidth() / 2 - (e.vp.padding * 3)+ this.roadWidth / 2) * orientationZ;
+                /* vertical case:   */ (e.getVpWidth() / 2 - (e.vp.padding * 1.5)+ this.roadWidth / 2) * orientationZ;
                 vZ =
-                    /* horizontal case: */ -(e.getVpWidth() / 2 - (e.vp.padding * 3)+ this.roadWidth / 2) * orientationX +
+                    /* horizontal case: */ -(e.getVpWidth() / 2 - (e.vp.padding * 1.5)+ this.roadWidth / 2) * orientationX +
                     /* vertical case:   */ (e.getSideWidth(true) + offsetVR) * orientationZ;
             } else {
                 vX =
