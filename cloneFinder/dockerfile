@@ -1,0 +1,35 @@
+FROM ubuntu:22.04
+
+# Exclude some packages to lighten the image
+RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
+RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
+
+# Suppress shell interactions and install dependencies
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update \
+    && apt-get install -y python3.10 \
+    && apt-get install -y python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /home/app
+
+# Copy python dependencies file and install them
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir --upgrade  -r requirements.txt
+
+# Copy codes and data into the container
+COPY . .
+
+# Create a non-root user and set permissions
+RUN groupadd -r apprunner && useradd --no-log-init -r -g apprunner apprunner
+RUN chown -R apprunner:apprunner /home/app
+
+# switch to non-root user
+USER apprunner
+
+# add exec permission on entrypoint script
+RUN chmod +x ./dockerfile_entrypoint.sh
+
+# set entrypoint cmd
+ENTRYPOINT ["/bin/sh", "./dockerfile_entrypoint.sh"]
