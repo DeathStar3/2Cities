@@ -1,7 +1,4 @@
 #!/bin/sh
-if [ ! -d experiments ]; then
-    mkdir experiments
-fi
 if [ ! -d export ]; then
     mkdir export
 fi
@@ -68,10 +65,10 @@ fi
 
 # Downloading the project
 project=$(basename -- "$PROJECT_URL")
-path=experiments/$project
+path=experiments_volume/$project
 
 if [ ! -d "$path" ]; then
-    echo Download at "$PROJECT_URL"
+    echo Downloading ...
     mkdir download
     cd download
     wget -q -O "$project".zip "$PROJECT_URL"/archive/master.zip
@@ -83,7 +80,7 @@ if [ ! -d "$path" ]; then
     fi
     unzip -q "$project".zip
     rm "$project".zip
-    mv $(ls) ../experiments/"$project"
+    mv $(ls) ../experiments_volume/"$project"
     cd ..
     rm -rf download
 fi

@@ -73,7 +73,7 @@ export default class GraphBuilderVisitor extends SymfinderVisitor{
         // var fileName = node.getSourceFile().fileName;
         // @ts-ignore
         // var fileName = path.relative(process.env.PROJECT_PATH, node.getSourceFile().fileName).substring(6);
-        var fileName = node.getSourceFile().fileName.replace(/^.*\/experiment/, 'experiment');
+        var fileName = node.getSourceFile().fileName.replace(/^.*?experiments_volume\//, '');
         /*if(node.parent.kind == SyntaxKind.InterfaceDeclaration)
             classType = EntityType.INTERFACE;
         else if(node.parent.kind == SyntaxKind.ClassDeclaration)
@@ -121,7 +121,7 @@ export default class GraphBuilderVisitor extends SymfinderVisitor{
 
         // @ts-ignore
         // var filePath = path.relative(process.env.PROJECT_PATH, node.getSourceFile().fileName).substring(6);
-        var filePath = node.getSourceFile().fileName.replace(/^.*\/experiment/, 'experiment');
+        var filePath = node.getSourceFile().fileName.replace(/^.*?experiments_volume\//, '');
 
         var fileName = filname_from_filepath(filePath);
         var importedFileName: string;

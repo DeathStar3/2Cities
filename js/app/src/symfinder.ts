@@ -181,7 +181,8 @@ export class Symfinder{
     async visitAllFiles(path: string): Promise<string[]>{
         var folderName = path.split('/').pop();
         if(folderName === undefined) return [];
-        await this.neoGraph.createNodeWithPath(folderName, path, EntityType.DIRECTORY, []);
+        let projectRoot = path.replace(/^.*?experiments_volume\//, '');
+        await this.neoGraph.createNodeWithPath(folderName, projectRoot, EntityType.DIRECTORY, []);
         return await this.visitFiles(path, []);
     }
 
@@ -192,17 +193,19 @@ export class Symfinder{
      * @returns all files visited
      */
     async visitFiles(path: string, files: string[]): Promise<string[]>{
-
         var parentFolderName = path.split('/').slice(-1)[0];
         if(parentFolderName === undefined) return files;
-        var parentNode = await this.neoGraph.getNodeWithPath(parentFolderName, path);
+        if(parentFolderName.startsWith(".")) return files;
+        let parentPath = path.replace(/^.*?experiments_volume\//, '')
+        var parentNode = await this.neoGraph.getNodeWithPath(parentFolderName, parentPath);
         if(parentNode === undefined) return files;
 
         for(let fileName of readdirSync(path)){
+            let nodeProjectPath = join(parentPath, fileName)
             const absolute_path = join(path, fileName);
             if (statSync(absolute_path).isDirectory()){
                 if(!fileName.includes('test') && !fileName.includes('Test')){
-                    var folderNode: Node = await this.neoGraph.createNodeWithPath(fileName, absolute_path, EntityType.DIRECTORY, []);
+                    var folderNode: Node = await this.neoGraph.createNodeWithPath(fileName, nodeProjectPath, EntityType.DIRECTORY, []);
                     await this.neoGraph.linkTwoNodes(<Node>parentNode, folderNode, RelationType.CHILD);
                     var newFiles = await this.visitFiles(absolute_path, files);
                     files.concat(newFiles);
@@ -215,7 +218,7 @@ export class Symfinder{
                 if(fileName.endsWith(".ts") && !fileName.endsWith(".usage.ts") && !fileName.endsWith("Test.ts") && !fileName.endsWith("test.ts") && !fileName.endsWith("tests.ts") && !fileName.endsWith(".spec.ts") && !fileName.endsWith(".d.ts")){
                     process.stdout.write("\rDetecting files ("+files.length+"): '"+fileName + "'\x1b[K");
                     files.push(absolute_path);
-                    var fileNode = await this.neoGraph.createNodeWithPath(fileName, absolute_path, EntityType.FILE, []);
+                    var fileNode = await this.neoGraph.createNodeWithPath(fileName, nodeProjectPath, EntityType.FILE, []);
                     await this.neoGraph.linkTwoNodes(<Node>parentNode, fileNode, RelationType.CHILD)
                 }
             }

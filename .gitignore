@@ -38,6 +38,8 @@ testadd
 varicity-backend/dockervolume
 private-tools
 dockervolume
+experiments_volume
+tasks_volume
 
 data
 result_stats.json
@@ -51,6 +53,7 @@ js/**/export
 
 # msccd # 
 analysis_shared_files
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

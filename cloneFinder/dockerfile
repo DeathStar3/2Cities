@@ -32,4 +32,4 @@ USER apprunner
 RUN chmod +x ./dockerfile_entrypoint.sh
 
 # set entrypoint cmd
-ENTRYPOINT ["/bin/sh", "./dockerfile_entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "./dockerfile_entrypoint.sh"]

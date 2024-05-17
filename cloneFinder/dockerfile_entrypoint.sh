@@ -1,5 +1,4 @@
-#!/bin/sh
-
+#!/bin/bash
 HTTP_PATH=""
 PROJECT_=""
 TASK=""
@@ -39,13 +38,14 @@ while true; do
   if [ "$NB_ARG" -ge "$NB_MAX_ARGS" ]; then
       break
   fi
-  let NB_ARG++
+  # let NB_ARG++
+  NB_ARG=$((NB_ARG+1))
   echo "$1"
   case "$1" in
-  -http) set_http "$2"; shift 2;  ;; # Output http path
-  -project) PROJECT="$1" ; shift 2; ;; # set project name to analyze
-  -task) TASK="$1"; shift 2; ;; # set task id to parse
-  -detection) set_detection "$2"; shift 2; ;; # set detection id to parse
+  -http) set_http "$2"; shift 2;; # Output http path
+  -project) PROJECT="$2" ; shift 2;; # set project name to analyze
+  -task) TASK="$2"; shift 2;; # set task id to parse
+  -detection) set_detection "$2"; shift 2;; # set detection id to parse
   esac
 done
 
@@ -54,7 +54,7 @@ if [ "$PROJECT" = "" ];then
   exit 22
 fi
 
-echo "Analyzing project \"$PROJECT_URL\"."
+echo "Analyzing project \"$PROJECT\"."
 if [ "$HTTP_PATH" != "" ]; then
   echo "Project results will be send to server \"$HTTP_PATH\""
 fi
@@ -64,4 +64,4 @@ export PROJECT
 export TASK
 export DETECTION
 
-python3 main.py "$TASK" "$DETECTION" "$PROJECT" "$HTTP_PATH" 
+python3 main.py $TASK $DETECTION $PROJECT $HTTP_PATH

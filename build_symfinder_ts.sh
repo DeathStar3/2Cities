@@ -2,7 +2,7 @@
 
 set -e
 
-TAG=scp2024
+TAG=local
 
 cd js/app
 echo "building the Symfinder-TS engine"

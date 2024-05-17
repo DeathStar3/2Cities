@@ -1,0 +1,6 @@
+# URI examples: "neo4j://localhost", "neo4j+s://xxx.databases.neo4j.io"
+
+neo4j:
+  boltAddress: bolt://symfinder-ts-neo4j:7687
+  password: root
+  user: neo4j

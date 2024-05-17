@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
-TAG=scp2024
+TAG=local
+
+VOLUME_PATH=$(pwd)/experiments_volume
 
 cd js
 
@@ -11,4 +13,8 @@ fi
 
 echo Database running, starting engine container
 
-docker run --rm --network varicity-config --name symfinder-ts-cli deathstar3/symfinder-ts-cli:${TAG} $@
+docker run --rm \
+    --network varicity-config \
+    --name symfinder-ts-cli \
+    -v $VOLUME_PATH:/app/experiments_volume \
+    deathstar3/symfinder-ts-cli:${TAG} $@

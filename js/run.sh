@@ -1,7 +1,7 @@
 #!/bin/bash
-if [ ! -d ./app/experiments ]; then
-    mkdir ./app/experiments
-fi
+# if [ ! -d ./app/experiments ]; then
+#     mkdir ./app/experiments
+# fi
 if [ ! -d ./app/export ]; then
     mkdir ./app/export
 fi
@@ -77,10 +77,10 @@ cd app
 ################################################################################
 # Downloading the project
 project=$(basename -- "$PROJECT_URL")
-path=./experiments/$project
+path=../../experiments_volume/$project
 
 if [ ! -d "$path" ]; then
-    echo Download at "$PROJECT_URL"
+    echo Downloading...
     mkdir ./download
     cd ./download
     wget -q --show-progress -O "$project".zip "$PROJECT_URL"/archive/master.zip
@@ -92,7 +92,7 @@ if [ ! -d "$path" ]; then
     fi
     unzip -q "$project".zip
     rm "$project".zip
-    mv $(ls) ../experiments/"$project"
+    mv $(ls) ../experiments_volume/"$project"
     cd ..
     rm -d download
 fi

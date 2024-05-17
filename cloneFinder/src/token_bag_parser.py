@@ -33,14 +33,3 @@ def compute_clone_type(src_bag: Dict, clone_bag: Dict) -> int:
 def extract_bag(bags_data: Dict, file_index: int, bag_index: int) -> Dict:
     file_data = bags_data[str(file_index)]
     return file_data[str(bag_index)]
-
-
-if __name__ == '__main__':
-
-    project = sys.argv[1]
-
-    bag_file = "./analysis_shared_files/tasks/task35/tokenBags"
-    data = extract_bags_data(bag_file)
-                           
-    with open(f"./analysis_shared_files/bags_data/{project}_bags.json", "w") as outfile:
-        json.dump(data, outfile, indent=4)
