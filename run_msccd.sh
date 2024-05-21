@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TAG=test
+TAG=repro
 
 EXP_VOLUME=$(pwd)/experiments_volume
 TASKS_VOLUME=$(pwd)/tasks_volume
@@ -14,6 +14,7 @@ then
     --name msccd \
     -v $EXP_VOLUME:/root/MSCCD/experiments_volume \
     -v $TASKS_VOLUME:/root/MSCCD/tasks_volume \
+    -it \
     msccd:${TAG} /bin/bash
 else
     echo Container already exists, starting it...
