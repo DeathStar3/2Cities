@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TAG=local
+TAG=splc24
 
 VOLUME_PATH=$(pwd)/tasks_volume
 

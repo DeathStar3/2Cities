@@ -38,7 +38,7 @@ done
 export SYMFINDER_UID=$(id -u)
 export SYMFINDER_GID=$(id -g)
 export SYMFINDER_VERSION=$(git rev-parse HEAD)
-export TAG=local
+export TAG=splc24
 export DIR_PATH=$(pwd)
 export VOLUME_PATH=$(pwd)/dockervolume
 
