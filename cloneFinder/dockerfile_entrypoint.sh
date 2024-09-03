@@ -1,8 +1,8 @@
 #!/bin/bash
-HTTP_PATH=""
+HTTP_PATH="http://varicity-backend:3000/projects"
 PROJECT_=""
 TASK=""
-DETECTION=""
+DETECTION="1"
 
 set_http()
 {
@@ -42,10 +42,10 @@ while true; do
   NB_ARG=$((NB_ARG+1))
   echo "$1"
   case "$1" in
-  -http) set_http "$2"; shift 2;; # Output http path
+  #-http) set_http "$2"; shift 2;; # Output http path
   -project) PROJECT="$2" ; shift 2;; # set project name to analyze
   -task) TASK="$2"; shift 2;; # set task id to parse
-  -detection) set_detection "$2"; shift 2;; # set detection id to parse
+  #-detection) set_detection "$2"; shift 2;; # set detection id to parse
   esac
 done
 
