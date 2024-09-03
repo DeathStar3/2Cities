@@ -1,4 +1,0 @@
-neo4j:
-  boltAddress: bolt://localhost:7687
-  password: root
-  user: neo4j

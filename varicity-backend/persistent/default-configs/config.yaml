@@ -49,7 +49,7 @@ fnf_base:
     file_size: "adaptative"
   colors:
     base:
-      - name: "CROWN"
+      - name: "CLONED"
         color: "#f535e1"
       - name: "VP_FOLDER"
         color: "#3b107e"
@@ -64,7 +64,7 @@ fnf_base:
       - name: "FILE"
         color: "#555555"
     edges:
-      - name: "CROWN"
+      - name: "CLONED"
         color: "#f535e1"
         
 force_color: "#555555"   

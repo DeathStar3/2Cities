@@ -97,31 +97,39 @@ export class VPVariantsStrategy implements ParsingStrategy {
                 let srcNode = this.findNodeByName(link.source, fileList);
                 if (!cloneNodes.includes(srcNode)) {
                     cloneNodes.push(srcNode);
-                }
-                if (srcNode.cloneCrown === undefined) {
-                    let nodeI = this.findNodeByName(link.source, data.nodes);
-                    srcNode.cloneCrown = this.createCrownNode(nodeI);
+                    srcNode.addMetric(VariabilityMetricsName.NB_CLONES, this.checkAndGetMetric(1));
                 } else {
-                    srcNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
+                    srcNode.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
                 }
+                // if (srcNode.cloneCrown === undefined) {
+                //     let nodeI = this.findNodeByName(link.source, data.nodes);
+                //     srcNode.cloneCrown = this.createCrownNode(nodeI);
+                // } else {
+                //     srcNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
+                // }
                 let targetNode = this.findNodeByName(link.target, fileList);
                 if (!cloneNodes.includes(targetNode)) {
                     cloneNodes.push(targetNode);
-                }
-                if (targetNode.cloneCrown === undefined) {
-                    let nodeI = this.findNodeByName(link.target, data.nodes);
-                    targetNode.cloneCrown = this.createCrownNode(nodeI);
+                    targetNode.addMetric(VariabilityMetricsName.NB_CLONES, this.checkAndGetMetric(1));
                 } else {
-                    targetNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
+                    targetNode.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
                 }
-                let linkMax = Math.max(srcNode.cloneCrown.metrics.getMetricValue(VariabilityMetricsName.NB_CLONES), targetNode.cloneCrown.metrics.getMetricValue(VariabilityMetricsName.NB_CLONES));
+                // if (targetNode.cloneCrown === undefined) {
+                //     let nodeI = this.findNodeByName(link.target, data.nodes);
+                //     targetNode.cloneCrown = this.createCrownNode(nodeI);
+                // } else {
+                //     targetNode.cloneCrown.metrics.increaseMetricValue(VariabilityMetricsName.NB_CLONES, 1);
+                // }
+                let linkMax = Math.max(srcNode.metrics.getMetricValue(VariabilityMetricsName.NB_CLONES), targetNode.metrics.getMetricValue(VariabilityMetricsName.NB_CLONES));
                 if (linkMax > maxClone) {
                     maxClone = linkMax
                 }
             });
             console.log(cloneNodes.length)
             cloneNodes.forEach(node => {
-                node.cloneCrown.maxClone = maxClone;
+                // node.cloneCrown.maxClone = maxClone;
+                node.maxClone = maxClone
+                node.types.push("CLONED")
             })
 
             this.buildComposition(hierarchyLinks, nodesList, apiList, 0, config.orientation); // Add composition level to classes

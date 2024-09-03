@@ -58,11 +58,11 @@ export class FileBuilding3D extends Building3D {
 		}
 	}
 
-	private placeCrown() {
-		let crown = this.elementModel.cloneCrown;
-		let crownBuilding = Building3DFactory.createBuildingMesh(crown as Building, 0, this.scene, this.config);
-		this.crown = crownBuilding;
-	}
+	// private placeCrown() {
+	// 	let crown = this.elementModel.cloneCrown;
+	// 	// let crownBuilding = Building3DFactory.createBuildingMesh(crown as Building, 0, this.scene, this.config);
+	// 	this.crown = crownBuilding;
+	// }
 
 	public getCrownBuilding() {
 		if (this.crown !== undefined) {
@@ -77,9 +77,9 @@ export class FileBuilding3D extends Building3D {
 		let dim = Math.ceil(Math.sqrt(length));
 		this.max_x = this.max_z = dim;
 		this.placeClasses();
-		if (this.elementModel.cloneCrown) {
-			this.placeCrown();
-		}
+		// if (this.elementModel.cloneCrown) {
+		// 	this.placeCrown();
+		// }
 
 		if (this.auto_scale && length > 0) { // Compute scaling for folder mesh
 			const diameter = (this.class_width * this.max_x) / Math.cos(Math.PI / 4);
@@ -109,22 +109,22 @@ export class FileBuilding3D extends Building3D {
 	 * @param updatable 
 	 * @returns 
 	 */
-	protected renderBaseElement(
-		scale: number = 1,
-		sideOrientation: number = Mesh.DEFAULTSIDE,
-		updatable: boolean = false
-	): Mesh {
-		return MeshBuilder.CreateCylinder(
-			this.elementModel.name,
-			{
-				height: this.getHeight(),
-				diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
-				sideOrientation: sideOrientation,
-				updatable: updatable
-			},
-			this.scene
-		);
-	}
+	// protected renderBaseElement(
+	// 	scale: number = 1,
+	// 	sideOrientation: number = Mesh.DEFAULTSIDE,
+	// 	updatable: boolean = false
+	// ): Mesh {
+	// 	return MeshBuilder.CreateCylinder(
+	// 		this.elementModel.name,
+	// 		{
+	// 			height: this.getHeight(),
+	// 			diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
+	// 			sideOrientation: sideOrientation,
+	// 			updatable: updatable
+	// 		},
+	// 		this.scene
+	// 	);
+	// }
 
 	private drawMatrix(start_x, start_z, end_x, end_z, y, dim) {
 		const offset_x = (end_x - start_x) / dim
@@ -185,12 +185,12 @@ export class FileBuilding3D extends Building3D {
 			x += offset_x;
 		}
 
-		if (this.crown) {
-			this.crown.place(this.center.x, this.center.z);
-			this.crown.render(this.config, this.scale);
-			this.crown.d3Model.material.alpha = 0.1
-			this.crown.d3Model.translate(new Vector3(0, 1, 0), this.crown.elementModel.metrics.getMetricValue("nbClones") / 4);
-		}
+		// if (this.crown) {
+		// 	this.crown.place(this.center.x, this.center.z);
+		// 	this.crown.render(this.config, this.scale);
+		// 	this.crown.d3Model.material.alpha = 0.1
+		// 	// this.crown.d3Model.translate(new Vector3(0, 1, 0), this.crown.elementModel.metrics.getMetricValue("nbClones") / 4);
+		// }
 
 
 

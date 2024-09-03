@@ -1,0 +1,4 @@
+neo4j:
+  boltAddress: bolt://symfinder-ts-neo4j:7687
+  password: root
+  user: neo4j

@@ -1,0 +1,1 @@
+MATCH (n:BASE) WITH collect(n) AS base CALL apoc.export.csv.data(base, [], "base.csv", {}) YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data RETURN file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data

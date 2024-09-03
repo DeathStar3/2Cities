@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TAG=repro
+TAG=splc24
 
 EXP_VOLUME=$(pwd)/experiments_volume
 TASKS_VOLUME=$(pwd)/tasks_volume

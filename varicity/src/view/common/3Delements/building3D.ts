@@ -40,6 +40,7 @@ export class Building3D extends Element3D {
     d3ModelPrism: Mesh = undefined;
     d3ModelInvertedPyramid: Mesh = undefined;
     d3ModelSphere: Mesh = undefined;
+    d3ModelShade: Mesh = undefined;
 
     links: Link3D[] = [];
 
@@ -174,7 +175,7 @@ export class Building3D extends Element3D {
     }
 
     place(x: number, z: number) {
-        const increaseHeight = ["API", "FACTORY", "DECORATOR", "TEMPLATE", "STRATEGY", "CROWN"];
+        const increaseHeight = ["API", "FACTORY", "DECORATOR", "TEMPLATE", "STRATEGY", "CLONED"];
         let halfHeight = this.getHeight() / 2;
         this.center = new Vector3(x, halfHeight + this.depth * 30, z);
         this.bot = this.center.add(new Vector3(0, -halfHeight, 0));
@@ -195,20 +196,20 @@ export class Building3D extends Element3D {
         sideOrientation: number = Mesh.DEFAULTSIDE,
         updatable: boolean = false
     ): Mesh {
-        if (this.elementModel.types.includes("CROWN")) {
-            return MeshBuilder.CreateCylinder(
-                this.elementModel.name,
-                {
-                    // height: this.crownConstanteSize + this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
-                    // height: this.getHeight() + (this.elementModel.metrics.getMetricValue("nbClones") / 2),
-                    height: this.elementModel.metrics.getMetricValue("nbClones") / 2,
-                    diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
-                    sideOrientation: sideOrientation,
-                    updatable: updatable
-                },
-                this.scene);
-        }
-        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
+        // if (this.elementModel.types.includes("CROWN")) {
+        //     return MeshBuilder.CreateCylinder(
+        //         this.elementModel.name,
+        //         {
+        //             // height: this.crownConstanteSize + this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
+        //             // height: this.getHeight() + (this.elementModel.metrics.getMetricValue("nbClones") / 2),
+        //             height: this.elementModel.metrics.getMetricValue("nbClones") / 2,
+        //             diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
+        //             sideOrientation: sideOrientation,
+        //             updatable: updatable
+        //         },
+        //         this.scene);
+        // }
+        if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("DIRECTORY")) { // creation of folder cylinder here
             return MeshBuilder.CreateCylinder(
                 this.elementModel.name,
                 {
@@ -553,7 +554,7 @@ export class Building3D extends Element3D {
         if (this.elementModel.types.includes("VARIANT_FILE") && !this.elementModel.types.includes("CORE_FILE")) {
             this.mat = this.createVariantFileMaterial();
         }
-        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("CROWN")) {
+        else if (this.elementModel.types.includes("FILE") || this.elementModel.types.includes("CLONED")) {
             this.mat = this.createDirectoryDefaultMaterial();
         } else {
             this.mat = this.createDefaultMaterial();
@@ -684,6 +685,36 @@ export class Building3D extends Element3D {
             this.d3ModelPyramid.material = this.mat;
             this.d3ModelPyramid.material.backFaceCulling = false;
             this.d3Model = Mesh.MergeMeshes([this.d3Model, this.d3ModelPyramid], true);
+        }
+        
+        if (this.elementModel.types.includes("CLONED")) {
+            // console.log("before merge")
+            // console.log(this.top)
+            this.d3ModelShade = MeshBuilder.CreateCylinder("shade",{
+
+                // height: this.crownConstanteSize + this.elementModel.metrics.getMetricValue("nbClones"), // Here to change the default size of the mesh
+                // height: this.getHeight() + (this.elementModel.metrics.getMetricValue("nbClones") / 2),
+                height: this.elementModel.metrics.getMetricValue("nbClones") / 2,
+                // height: (this.getWidth() - this.padding) + this.elementModel.metrics.getMetricValue("nbClones"),
+                diameter: this.elementModel.getWidth(this.config.variables.width) * scale,
+            },this.scene);
+            this.d3ModelShade.setPositionWithLocalVector(
+                this.center.add(
+                    new Vector3(
+                        0,
+                        (this.getHeight() / 2 + this.elementModel.metrics.getMetricValue("nbClones") / 4) + 0.25, // it is Y vector of the top. 
+                        // 1.25,
+                        0
+                    )
+                )
+            );
+            this.top = this.top.add(new Vector3(0, (this.getHeight() / 2 + this.elementModel.metrics.getMetricValue("nbClones") / 4) + 0.25, 0 ));
+            this.d3ModelShade.material = this.mat;
+            this.d3ModelShade.material.alpha = 0.1
+            this.d3ModelShade.material.backFaceCulling = false;
+            this.d3Model = Mesh.MergeMeshes([this.d3Model, this.d3ModelShade], true);
+            // console.log("after merge")
+            // console.log(this.top)
         }
 
         // Default edge coloring

@@ -4,7 +4,7 @@ TAG=local
 
 VOLUME_PATH=$(pwd)/experiments_volume
 
-cd js
+cd symfinder-ts
 
 if ! docker ps | grep -q neo4j; then
     echo Starting database container

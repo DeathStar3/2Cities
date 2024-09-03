@@ -1,3 +1,0 @@
-class N {}
-
-export {N};
