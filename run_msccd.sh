@@ -15,7 +15,7 @@ then
     -v $EXP_VOLUME:/root/MSCCD/experiments_volume \
     -v $TASKS_VOLUME:/root/MSCCD/tasks_volume \
     -it \
-    msccd:${TAG} /bin/bash
+    deathstar3/msccd:${TAG} /bin/bash
 else
     echo Container already exists, starting it...
     docker start msccd
