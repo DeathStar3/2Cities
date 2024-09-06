@@ -48,7 +48,7 @@ The following Docker images hosted on the [Docker Hub](https://hub.docker.com/u/
 deathstar3/symfinder-ts-cli
 deathstar3/varicity-ts
 deathstar3/varicity-ts-backend
-msccd
+deathstart3/msccd (super heavy image ! More than 3Gb)
 deathstar3/clonefinder-cli
 ```
 
