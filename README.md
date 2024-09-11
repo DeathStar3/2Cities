@@ -94,53 +94,15 @@ deathstar3/clonefinder-cli
   - Then it is up to you to modify the _minTokens_ and _minTokensForBagGeneration_. They impact the size of code fragments detected. You can also change the detection threshold.
   For more information please refer to the [MSCCD repository](https://github.com/zhuwq585/MSCCD)
 
-  - Once completed, you can run MSCCD in the terminal
+  - Once completed, you can run the code clone detection
 
     - On GNU/Linux
 
       ```
-        ./run_msccd.sh
+        ./run_ccd.sh project_name
       ```
 
-    - You can see this prompt
-
-        ```
-          root@e4871877d50f:/# 
-        ```
-
-    - execute the following two commands, one after the other, to run the analysis:
-
-        ```
-        cd root/MSCCD
-
-
-        python3 controller.py config_file_name
-        ```
-
-      - Please replace the _config_file_name_ with the name of your config file.
-
-    - Once the execution is finished, note the task number prompted in the last log 
-
-      ```
-        # Example
-        Check the report in /root/MSCCD/tasks_volume/tasks/task12/detection1
-      ```
-      
-    - and then execute the command: 
-
-      ```
-        exit
-      ```
-
-  - Now for the last step, you will run **cloneFinder** to parse the results of the CCD
-
-    - On GNU/Linux
-
-      ```
-        ./run_clonefinder.sh -task taskNumner -project projectName
-      ```
-
-    - Please replace the _taskNumber_ with the one you noted at the last step and the _projectName_ with your project name. Please note it is also case-sensitive.
+      - Please replace the _project_name_ with the name of your project. Please note it is also case-sensitive.
 
   - Once the analysis is done, follow these steps:
 

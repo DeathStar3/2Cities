@@ -40,7 +40,6 @@ while true; do
   fi
   # let NB_ARG++
   NB_ARG=$((NB_ARG+1))
-  echo "$1"
   case "$1" in
   #-http) set_http "$2"; shift 2;; # Output http path
   -project) PROJECT="$2" ; shift 2;; # set project name to analyze
