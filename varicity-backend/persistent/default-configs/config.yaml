@@ -49,6 +49,10 @@ fnf_base:
     file_size: "adaptative"
   colors:
     base:
+      - name: "CORE_FILE"
+        color: "#860d3f"
+      - name: "VARIANT_FILE"
+        color: "#df5ee7"
       - name: "CLONED"
         color: "#f535e1"
       - name: "VP_FOLDER"
@@ -57,10 +61,6 @@ fnf_base:
         color: "#5e2bb1"
       - name: "DIRECTORY"
         color: "#555555"
-      - name: "CORE_FILE"
-        color: "#860d3f"
-      - name: "VARIANT_FILE"
-        color: "#df5ee7"
       - name: "FILE"
         color: "#555555"
     edges:
